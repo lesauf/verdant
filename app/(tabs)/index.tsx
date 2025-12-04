@@ -1,98 +1,187 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { FontAwesome5 } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { mockBlocks, mockTasks } from "../../data/mockData";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function DashboardScreen() {
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
-export default function HomeScreen() {
+  // Calculate real stats
+  const totalBlocks = mockBlocks.length;
+  const totalArea = mockBlocks.reduce((sum, block) => sum + block.areaHa, 0);
+  const totalTasks = mockTasks.length;
+  const completedTasks = mockTasks.filter(t => t.status === "Done").length;
+  const inProgressTasks = mockTasks.filter(t => t.status === "In Progress").length;
+  const todoTasks = mockTasks.filter(t => t.status === "Todo").length;
+
+  // Blocks by status
+  const plantedBlocks = mockBlocks.filter(b => b.status === "Planted").length;
+  const prepBlocks = mockBlocks.filter(b => b.status === "Prep").length;
+  const fallowBlocks = mockBlocks.filter(b => b.status === "Fallow").length;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <ScrollView className="p-4">
+        {/* Header */}
+        <View className="flex-row justify-between items-center mb-6">
+          <View>
+            <Text className="text-2xl font-bold text-gray-900">Verdant</Text>
+            <Text className="text-gray-500">Good Morning, Farmer</Text>
+          </View>
+          <View className="bg-emerald-100 p-2 rounded-full">
+            <FontAwesome5 name="cloud-sun" size={24} color="#10b981" />
+          </View>
+        </View>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {/* Farm Overview Stats */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-gray-900 mb-3">Farm Overview</Text>
+          <View className="flex-row gap-3 mb-3">
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
+              <FontAwesome5 name="map" size={20} color="#10b981" className="mb-2" />
+              <Text className="text-2xl font-bold text-gray-900">{totalBlocks}</Text>
+              <Text className="text-gray-500 text-sm">Blocks</Text>
+            </View>
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
+              <FontAwesome5 name="expand-arrows-alt" size={20} color="#10b981" className="mb-2" />
+              <Text className="text-2xl font-bold text-gray-900">{totalArea.toFixed(1)}</Text>
+              <Text className="text-gray-500 text-sm">Hectares</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Tasks Stats */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-gray-900 mb-3">Tasks Overview</Text>
+          <View className="bg-white rounded-xl p-4 shadow-sm mb-3">
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-gray-600">Total Tasks</Text>
+              <Text className="text-xl font-bold text-gray-900">{totalTasks}</Text>
+            </View>
+            <View className="flex-row gap-2">
+              <View className="flex-1 bg-emerald-50 p-3 rounded-lg">
+                <Text className="text-emerald-700 font-bold text-lg">{completedTasks}</Text>
+                <Text className="text-emerald-600 text-xs">Done</Text>
+              </View>
+              <View className="flex-1 bg-amber-50 p-3 rounded-lg">
+                <Text className="text-amber-700 font-bold text-lg">{inProgressTasks}</Text>
+                <Text className="text-amber-600 text-xs">In Progress</Text>
+              </View>
+              <View className="flex-1 bg-gray-50 p-3 rounded-lg">
+                <Text className="text-gray-700 font-bold text-lg">{todoTasks}</Text>
+                <Text className="text-gray-600 text-xs">To Do</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Blocks Status */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-gray-900 mb-3">Blocks Status</Text>
+          <View className="flex-row gap-3">
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
+              <View className="w-3 h-3 rounded-full bg-emerald-500 mb-2" />
+              <Text className="text-xl font-bold text-gray-900">{plantedBlocks}</Text>
+              <Text className="text-gray-500 text-sm">Planted</Text>
+            </View>
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
+              <View className="w-3 h-3 rounded-full bg-amber-500 mb-2" />
+              <Text className="text-xl font-bold text-gray-900">{prepBlocks}</Text>
+              <Text className="text-gray-500 text-sm">Prep</Text>
+            </View>
+            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
+              <View className="w-3 h-3 rounded-full bg-gray-400 mb-2" />
+              <Text className="text-xl font-bold text-gray-900">{fallowBlocks}</Text>
+              <Text className="text-gray-500 text-sm">Fallow</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Today's Focus */}
+        <View className="mb-20">
+          <Text className="text-lg font-bold text-gray-900 mb-3">Today's Focus</Text>
+          <View className="bg-white rounded-xl p-4 shadow-sm">
+            <View className="flex-row items-center mb-2">
+              <FontAwesome5 name="clipboard-check" size={16} color="#10b981" />
+              <Text className="text-gray-900 font-semibold ml-2">Priority Tasks</Text>
+            </View>
+            {todoTasks > 0 || inProgressTasks > 0 ? (
+              <Text className="text-gray-600">
+                You have {todoTasks + inProgressTasks} pending task{todoTasks + inProgressTasks !== 1 ? 's' : ''} to complete
+              </Text>
+            ) : (
+              <Text className="text-gray-600">All tasks completed! 🎉</Text>
+            )}
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
+        onPress={() => setShowQuickActions(true)}
+      >
+        <FontAwesome5 name="plus" size={24} color="white" />
+      </TouchableOpacity>
+
+      {/* Quick Actions Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showQuickActions}
+        onRequestClose={() => setShowQuickActions(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-end"
+          activeOpacity={1}
+          onPress={() => setShowQuickActions(false)}
+        >
+          <View className="bg-white rounded-t-3xl p-6">
+            <Text className="text-xl font-bold text-gray-900 mb-4">Quick Actions</Text>
+
+            <TouchableOpacity
+              className="flex-row items-center bg-emerald-50 p-4 rounded-xl mb-3"
+              onPress={() => {
+                setShowQuickActions(false);
+                router.push("/(tabs)/blocks/index");
+              }}
+            >
+              <View className="bg-emerald-500 w-10 h-10 rounded-full items-center justify-center mr-3">
+                <FontAwesome5 name="map-marked-alt" size={18} color="white" />
+              </View>
+              <View>
+                <Text className="text-gray-900 font-semibold">Add Block</Text>
+                <Text className="text-gray-500 text-sm">Create a new farm block</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-row items-center bg-amber-50 p-4 rounded-xl mb-3"
+              onPress={() => {
+                setShowQuickActions(false);
+                router.push("/(tabs)/tasks/index");
+              }}
+            >
+              <View className="bg-amber-500 w-10 h-10 rounded-full items-center justify-center mr-3">
+                <FontAwesome5 name="tasks" size={18} color="white" />
+              </View>
+              <View>
+                <Text className="text-gray-900 font-semibold">Add Task</Text>
+                <Text className="text-gray-500 text-sm">Create a new task</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="bg-gray-100 p-4 rounded-xl items-center mt-2"
+              onPress={() => setShowQuickActions(false)}
+            >
+              <Text className="text-gray-600 font-semibold">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
