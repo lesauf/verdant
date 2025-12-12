@@ -1,15 +1,21 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useState } from "react";
-import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useBlocks } from "../../contexts/BlocksContext";
-import { useTasks } from "../../contexts/TasksContext";
+import { useBlockStore } from "../../src/presentation/stores/blockStore";
+import { useTaskStore } from "../../src/presentation/stores/taskStore";
 
 export default function DashboardScreen() {
   const [showQuickActions, setShowQuickActions] = useState(false);
-  const { blocks } = useBlocks();
-  const { tasks } = useTasks();
+  const { blocks, loadBlocks } = useBlockStore();
+  const { tasks, loadTasks } = useTaskStore();
+
+  // Load data on mount
+  useEffect(() => {
+    loadBlocks();
+    loadTasks();
+  }, []);
 
   // Calculate real stats
   const totalBlocks = blocks.length;
@@ -24,167 +30,161 @@ export default function DashboardScreen() {
   const prepBlocks = blocks.filter(b => b.status === "Prep").length;
   const fallowBlocks = blocks.filter(b => b.status === "Fallow").length;
 
+  // Get today's tasks
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todaysTasks = tasks.filter(task => {
+    if (!task.startDate) return false;
+    const taskDate = new Date(task.startDate);
+    taskDate.setHours(0, 0, 0, 0);
+    return taskDate.getTime() === today.getTime();
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="p-4">
         {/* Header */}
         <View className="flex-row justify-between items-center mb-6">
           <View>
-            <Text className="text-2xl font-bold text-gray-900">Verdant</Text>
-            <Text className="text-gray-500">Good Morning, Farmer</Text>
-          </View>
-          <View className="bg-emerald-100 p-2 rounded-full">
-            <FontAwesome5 name="cloud-sun" size={24} color="#10b981" />
+            <Text className="text-3xl font-bold text-gray-900">Dashboard</Text>
+            <Text className="text-gray-500 mt-1">Farm Overview</Text>
           </View>
         </View>
 
-        {/* Farm Overview Stats */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-gray-900 mb-3">Farm Overview</Text>
-          <View className="flex-row gap-3 mb-3">
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-              <FontAwesome5 name="map" size={20} color="#10b981" className="mb-2" />
-              <Text className="text-2xl font-bold text-gray-900">{totalBlocks}</Text>
-              <Text className="text-gray-500 text-sm">Blocks</Text>
-            </View>
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-              <FontAwesome5 name="expand-arrows-alt" size={20} color="#10b981" className="mb-2" />
-              <Text className="text-2xl font-bold text-gray-900">{totalArea.toFixed(1)}</Text>
-              <Text className="text-gray-500 text-sm">Hectares</Text>
-            </View>
+        {/* Stats Cards */}
+        <View className="flex-row justify-between mb-4">
+          <View className="bg-emerald-500 p-4 rounded-xl flex-1 mr-2">
+            <FontAwesome5 name="map" size={24} color="white" />
+            <Text className="text-white text-2xl font-bold mt-2">{totalBlocks}</Text>
+            <Text className="text-white opacity-90">Total Blocks</Text>
+          </View>
+          <View className="bg-blue-500 p-4 rounded-xl flex-1 ml-2">
+            <FontAwesome5 name="expand-arrows-alt" size={24} color="white" />
+            <Text className="text-white text-2xl font-bold mt-2">{totalArea.toFixed(1)}</Text>
+            <Text className="text-white opacity-90">Total Ha</Text>
           </View>
         </View>
 
-        {/* Tasks Stats */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-gray-900 mb-3">Tasks Overview</Text>
-          <View className="bg-white rounded-xl p-4 shadow-sm mb-3">
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-gray-600">Total Tasks</Text>
-              <Text className="text-xl font-bold text-gray-900">{totalTasks}</Text>
-            </View>
-            <View className="flex-row gap-2">
-              <View className="flex-1 bg-emerald-50 p-3 rounded-lg">
-                <Text className="text-emerald-700 font-bold text-lg">{completedTasks}</Text>
-                <Text className="text-emerald-600 text-xs">Done</Text>
-              </View>
-              <View className="flex-1 bg-amber-50 p-3 rounded-lg">
-                <Text className="text-amber-700 font-bold text-lg">{inProgressTasks}</Text>
-                <Text className="text-amber-600 text-xs">In Progress</Text>
-              </View>
-              <View className="flex-1 bg-gray-50 p-3 rounded-lg">
-                <Text className="text-gray-700 font-bold text-lg">{todoTasks}</Text>
-                <Text className="text-gray-600 text-xs">To Do</Text>
-              </View>
-            </View>
+        <View className="flex-row justify-between mb-6">
+          <View className="bg-purple-500 p-4 rounded-xl flex-1 mr-2">
+            <FontAwesome5 name="tasks" size={24} color="white" />
+            <Text className="text-white text-2xl font-bold mt-2">{totalTasks}</Text>
+            <Text className="text-white opacity-90">Total Tasks</Text>
+          </View>
+          <View className="bg-orange-500 p-4 rounded-xl flex-1 ml-2">
+            <FontAwesome5 name="check-circle" size={24} color="white" />
+            <Text className="text-white text-2xl font-bold mt-2">{completedTasks}</Text>
+            <Text className="text-white opacity-90">Completed</Text>
           </View>
         </View>
 
-        {/* Blocks Status */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-gray-900 mb-3">Blocks Status</Text>
-          <View className="flex-row gap-3">
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-              <View className="w-3 h-3 rounded-full bg-emerald-500 mb-2" />
-              <Text className="text-xl font-bold text-gray-900">{plantedBlocks}</Text>
-              <Text className="text-gray-500 text-sm">Planted</Text>
+        {/* Block Status Breakdown */}
+        <View className="bg-white p-5 rounded-xl shadow-sm mb-4">
+          <Text className="text-lg font-bold text-gray-900 mb-4">Block Status</Text>
+
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row items-center flex-1">
+              <View className="w-3 h-3 rounded-full bg-emerald-500 mr-2" />
+              <Text className="text-gray-700">Planted</Text>
             </View>
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-              <View className="w-3 h-3 rounded-full bg-amber-500 mb-2" />
-              <Text className="text-xl font-bold text-gray-900">{prepBlocks}</Text>
-              <Text className="text-gray-500 text-sm">Prep</Text>
+            <Text className="text-gray-900 font-semibold">{plantedBlocks}</Text>
+          </View>
+
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row items-center flex-1">
+              <View className="w-3 h-3 rounded-full bg-amber-500 mr-2" />
+              <Text className="text-gray-700">Prep</Text>
             </View>
-            <View className="flex-1 bg-white p-4 rounded-xl shadow-sm">
-              <View className="w-3 h-3 rounded-full bg-gray-400 mb-2" />
-              <Text className="text-xl font-bold text-gray-900">{fallowBlocks}</Text>
-              <Text className="text-gray-500 text-sm">Fallow</Text>
+            <Text className="text-gray-900 font-semibold">{prepBlocks}</Text>
+          </View>
+
+          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center flex-1">
+              <View className="w-3 h-3 rounded-full bg-gray-500 mr-2" />
+              <Text className="text-gray-700">Fallow</Text>
             </View>
+            <Text className="text-gray-900 font-semibold">{fallowBlocks}</Text>
           </View>
         </View>
 
-        {/* Today's Focus */}
-        <View className="mb-20">
-          <Text className="text-lg font-bold text-gray-900 mb-3">Today's Focus</Text>
-          <View className="bg-white rounded-xl p-4 shadow-sm">
-            <View className="flex-row items-center mb-2">
-              <FontAwesome5 name="clipboard-check" size={16} color="#10b981" />
-              <Text className="text-gray-900 font-semibold ml-2">Priority Tasks</Text>
+        {/* Task Progress */}
+        <View className="bg-white p-5 rounded-xl shadow-sm mb-4">
+          <Text className="text-lg font-bold text-gray-900 mb-4">Task Progress</Text>
+
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row items-center flex-1">
+              <View className="w-3 h-3 rounded-full bg-red-500 mr-2" />
+              <Text className="text-gray-700">To Do</Text>
             </View>
-            {todoTasks > 0 || inProgressTasks > 0 ? (
-              <Text className="text-gray-600">
-                You have {todoTasks + inProgressTasks} pending task{todoTasks + inProgressTasks !== 1 ? 's' : ''} to complete
-              </Text>
-            ) : (
-              <Text className="text-gray-600">All tasks completed! 🎉</Text>
-            )}
+            <Text className="text-gray-900 font-semibold">{todoTasks}</Text>
           </View>
+
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row items-center flex-1">
+              <View className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
+              <Text className="text-gray-700">In Progress</Text>
+            </View>
+            <Text className="text-gray-900 font-semibold">{inProgressTasks}</Text>
+          </View>
+
+          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center flex-1">
+              <View className="w-3 h-3 rounded-full bg-emerald-500 mr-2" />
+              <Text className="text-gray-700">Done</Text>
+            </View>
+            <Text className="text-gray-900 font-semibold">{completedTasks}</Text>
+          </View>
+        </View>
+
+        {/* Today's Tasks */}
+        <View className="bg-white p-5 rounded-xl shadow-sm mb-4">
+          <Text className="text-lg font-bold text-gray-900 mb-4">Priority Tasks (Today)</Text>
+          {todaysTasks.length === 0 ? (
+            <Text className="text-gray-400 text-center py-4">No tasks scheduled for today</Text>
+          ) : (
+            todaysTasks.map((task) => (
+              <TouchableOpacity
+                key={task.id}
+                className="bg-gray-50 p-3 rounded-lg mb-2"
+                onPress={() => router.push('/tasks')}
+              >
+                <Text className="fontbold text-gray-900 mb-1">{task.title}</Text>
+                {task.description && (
+                  <Text className="text-gray-600 text-sm">{task.description}</Text>
+                )}
+                <View className={`mt-2 self-start px-3 py-1 rounded-full ${task.status === 'Done' ? 'bg-emerald-100' :
+                    task.status === 'In Progress' ? 'bg-blue-100' : 'bg-red-100'
+                  }`}>
+                  <Text className={`text-xs font-semibold ${task.status === 'Done' ? 'text-emerald-700' :
+                      task.status === 'In Progress' ? 'text-blue-700' : 'text-red-700'
+                    }`}>{task.status}</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          )}
+        </View>
+
+        {/* Quick Actions */}
+        <View className="bg-white p-5 rounded-xl shadow-sm mb-20">
+          <Text className="text-lg font-bold text-gray-900 mb-4">Quick Actions</Text>
+
+          <TouchableOpacity
+            className="bg-emerald-500 p-4 rounded-lg mb-3 flex-row items-center"
+            onPress={() => router.push('/blocks')}
+          >
+            <FontAwesome5 name="plus-circle" size={20} color="white" />
+            <Text className="text-white font-bold ml-3">Add New Block</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-blue-500 p-4 rounded-lg flex-row items-center"
+            onPress={() => router.push('/tasks')}
+          >
+            <FontAwesome5 name="plus-circle" size={20} color="white" />
+            <Text className="text-white font-bold ml-3">Create New Task</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
-        onPress={() => setShowQuickActions(true)}
-      >
-        <FontAwesome5 name="plus" size={24} color="white" />
-      </TouchableOpacity>
-
-      {/* Quick Actions Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showQuickActions}
-        onRequestClose={() => setShowQuickActions(false)}
-      >
-        <TouchableOpacity
-          className="flex-1 bg-black/50 justify-end"
-          activeOpacity={1}
-          onPress={() => setShowQuickActions(false)}
-        >
-          <View className="bg-white rounded-t-3xl p-6">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Quick Actions</Text>
-
-            <TouchableOpacity
-              className="flex-row items-center bg-emerald-50 p-4 rounded-xl mb-3"
-              onPress={() => {
-                setShowQuickActions(false);
-                router.push("/(tabs)/blocks/index");
-              }}
-            >
-              <View className="bg-emerald-500 w-10 h-10 rounded-full items-center justify-center mr-3">
-                <FontAwesome5 name="map-marked-alt" size={18} color="white" />
-              </View>
-              <View>
-                <Text className="text-gray-900 font-semibold">Add Block</Text>
-                <Text className="text-gray-500 text-sm">Create a new farm block</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-row items-center bg-amber-50 p-4 rounded-xl mb-3"
-              onPress={() => {
-                setShowQuickActions(false);
-                router.push("/(tabs)/tasks/index");
-              }}
-            >
-              <View className="bg-amber-500 w-10 h-10 rounded-full items-center justify-center mr-3">
-                <FontAwesome5 name="tasks" size={18} color="white" />
-              </View>
-              <View>
-                <Text className="text-gray-900 font-semibold">Add Task</Text>
-                <Text className="text-gray-500 text-sm">Create a new task</Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="bg-gray-100 p-4 rounded-xl items-center mt-2"
-              onPress={() => setShowQuickActions(false)}
-            >
-              <Text className="text-gray-600 font-semibold">Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </SafeAreaView>
   );
 }

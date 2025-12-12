@@ -1,16 +1,21 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, FlatList, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TaskItem from "../../../components/tasks/TaskItem";
-import { useBlocks } from "../../../contexts/BlocksContext";
-import { useTasks } from "../../../contexts/TasksContext";
-import { type Task } from "../../../data/mockData";
+import { useBlockStore } from "../../../src/presentation/stores/blockStore";
+import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
 export default function TasksScreen() {
-    const { tasks, addTask, updateTask, deleteTask, toggleTaskComplete } = useTasks();
-    const { blocks } = useBlocks();
+    const { tasks, loadTasks, createTask, updateTask, deleteTask } = useTaskStore();
+    const { blocks, loadBlocks } = useBlockStore();
+
+    // Load data on mount
+    useEffect(() => {
+        loadTasks();
+        loadBlocks();
+    }, []);
 
     // Add task modal state
     const [isModalVisible, setModalVisible] = useState(false);
@@ -22,43 +27,58 @@ export default function TasksScreen() {
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [showDueDatePicker, setShowDueDatePicker] = useState(false);
 
-    const handleAddTask = () => {
+    const handleAddTask = async () => {
         if (!newTaskTitle) {
             Alert.alert("Error", "Please enter a task title");
             return;
         }
 
-        const newTask: Task = {
-            id: String(Date.now()),
-            title: newTaskTitle,
-            description: newTaskDescription || undefined,
-            status: "Todo",
-            blockId: selectedBlockId || undefined,
-            assignedTo: null,
-            startDate: startDate || undefined,
-            dueDate: dueDate || undefined,
-            createdAt: new Date(),
-        };
+        try {
+            await createTask({
+                title: newTaskTitle,
+                description: newTaskDescription || undefined,
+                status: "Todo",
+                blockId: selectedBlockId || undefined,
+                startDate: startDate || undefined,
+                dueDate: dueDate || undefined,
+            });
 
-        addTask(newTask);
-        setModalVisible(false);
-        setNewTaskTitle("");
-        setNewTaskDescription("");
-        setSelectedBlockId(null);
-        setStartDate(null);
-        setDueDate(null);
+            // Reset form
+            setModalVisible(false);
+            setNewTaskTitle("");
+            setNewTaskDescription("");
+            setSelectedBlockId(null);
+            setStartDate(null);
+            setDueDate(null);
+        } catch (error) {
+            Alert.alert("Error", error instanceof Error ? error.message : "Failed to create task");
+        }
     };
 
-    const formatDate = (date: Date | null | undefined) => {
-        if (!date) return "No date set";
-        return new Date(date).toLocaleDateString();
+    const handleStartDateChange = (_: any, selectedDate?: Date) => {
+        setShowStartDatePicker(false);
+        if (selectedDate) {
+            setStartDate(selectedDate);
+        }
+    };
+
+    const handleDueDateChange = (_: any, selectedDate?: Date) => {
+        setShowDueDatePicker(false);
+        if (selectedDate) {
+            setDueDate(selectedDate);
+        }
+    };
+
+    const formatDate = (date: Date | null) => {
+        if (!date) return "Not set";
+        return date.toLocaleDateString();
     };
 
     return (
         <SafeAreaView className="flex-1 bg-gray-50 p-4">
             <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-2xl font-bold text-gray-900">Tasks</Text>
-                <Text className="text-gray-500">{tasks.length} Tasks</Text>
+                <Text className="text-gray-500">{tasks.length} tasks</Text>
             </View>
 
             <FlatList
@@ -67,19 +87,18 @@ export default function TasksScreen() {
                 renderItem={({ item }) => (
                     <TaskItem
                         task={item}
-                        blocks={blocks}
-                        onToggleComplete={toggleTaskComplete}
                         onUpdate={updateTask}
                         onDelete={deleteTask}
-                        showActions={true}
                         showBlockSelector={true}
                     />
                 )}
                 contentContainerStyle={{ paddingBottom: 80 }}
                 ListEmptyComponent={
                     <View className="items-center justify-center mt-20">
-                        <FontAwesome5 name="clipboard-list" size={48} color="#d1d5db" />
-                        <Text className="text-gray-400 mt-4 text-center">No tasks yet.{'\n'}What needs to be done?</Text>
+                        <FontAwesome5 name="tasks" size={48} color="#d1d5db" />
+                        <Text className="text-gray-400 mt-4 text-center">
+                            No tasks yet.{'\n'}Create your first task!
+                        </Text>
                     </View>
                 }
             />
@@ -99,7 +118,7 @@ export default function TasksScreen() {
                 onRequestClose={() => setModalVisible(false)}
             >
                 <View className="flex-1 justify-end bg-black/50">
-                    <View className="bg-white rounded-t-3xl p-6 h-[80%]">
+                    <ScrollView className="bg-white rounded-t-3xl p-6" bounces={false}>
                         <View className="flex-row justify-between items-center mb-6">
                             <Text className="text-xl font-bold text-gray-900">New Task</Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
@@ -107,101 +126,90 @@ export default function TasksScreen() {
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView>
-                            <Text className="text-gray-700 font-semibold mb-2">Task Title</Text>
-                            <TextInput
-                                className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
-                                placeholder="e.g. Clear brush from Block A"
-                                value={newTaskTitle}
-                                onChangeText={setNewTaskTitle}
-                            />
+                        <Text className="text-gray-700 font-semibold mb-2">Task Title</Text>
+                        <TextInput
+                            className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
+                            placeholder="e.g. Plant tomatoes"
+                            value={newTaskTitle}
+                            onChangeText={setNewTaskTitle}
+                        />
 
-                            <Text className="text-gray-700 font-semibold mb-2">Description (Optional)</Text>
-                            <TextInput
-                                className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
-                                placeholder="Add task details..."
-                                value={newTaskDescription}
-                                onChangeText={setNewTaskDescription}
-                                multiline
-                                numberOfLines={3}
-                                textAlignVertical="top"
-                            />
+                        <Text className="text-gray-700 font-semibold mb-2">Description (Optional)</Text>
+                        <TextInput
+                            className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
+                            placeholder="Add details about this task..."
+                            value={newTaskDescription}
+                            onChangeText={setNewTaskDescription}
+                            multiline
+                            numberOfLines={3}
+                        />
 
-                            <Text className="text-gray-700 font-semibold mb-2">Start Date (Optional)</Text>
+                        <Text className="text-gray-700 font-semibold mb-2">Assign to Block (Optional)</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
                             <TouchableOpacity
-                                className="bg-gray-100 p-4 rounded-xl mb-4 flex-row items-center justify-between"
-                                onPress={() => setShowStartDatePicker(true)}
+                                className={`mr-2 px-4 py-2 rounded-full ${!selectedBlockId ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                                onPress={() => setSelectedBlockId(null)}
                             >
-                                <Text className={startDate ? "text-gray-900" : "text-gray-400"}>
-                                    {formatDate(startDate)}
+                                <Text className={!selectedBlockId ? 'text-white font-semibold' : 'text-gray-700'}>
+                                    No Block
                                 </Text>
-                                <FontAwesome5 name="play-circle" size={16} color="#6b7280" />
                             </TouchableOpacity>
-
-                            {showStartDatePicker && (
-                                <DateTimePicker
-                                    value={startDate || new Date()}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={(event, selectedDate) => {
-                                        setShowStartDatePicker(Platform.OS === 'ios');
-                                        if (selectedDate) setStartDate(selectedDate);
-                                    }}
-                                />
-                            )}
-
-                            <Text className="text-gray-700 font-semibold mb-2">Due Date (Optional)</Text>
-                            <TouchableOpacity
-                                className="bg-gray-100 p-4 rounded-xl mb-4 flex-row items-center justify-between"
-                                onPress={() => setShowDueDatePicker(true)}
-                            >
-                                <Text className={dueDate ? "text-gray-900" : "text-gray-400"}>
-                                    {formatDate(dueDate)}
-                                </Text>
-                                <FontAwesome5 name="calendar" size={16} color="#6b7280" />
-                            </TouchableOpacity>
-
-                            {showDueDatePicker && (
-                                <DateTimePicker
-                                    value={dueDate || new Date()}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={(event, selectedDate) => {
-                                        setShowDueDatePicker(Platform.OS === 'ios');
-                                        if (selectedDate) setDueDate(selectedDate);
-                                    }}
-                                />
-                            )}
-
-                            <Text className="text-gray-700 font-semibold mb-2">Assign to Block (Optional)</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
+                            {blocks.map((block) => (
                                 <TouchableOpacity
-                                    onPress={() => setSelectedBlockId(null)}
-                                    className={`mr-3 px-4 py-2 rounded-full border ${!selectedBlockId ? 'bg-emerald-100 border-emerald-500' : 'bg-white border-gray-200'}`}
+                                    key={block.id}
+                                    className={`mr-2 px-4 py-2 rounded-full ${selectedBlockId === block.id ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                                    onPress={() => setSelectedBlockId(block.id)}
                                 >
-                                    <Text className={!selectedBlockId ? 'text-emerald-700 font-semibold' : 'text-gray-600'}>None</Text>
+                                    <Text className={selectedBlockId === block.id ? 'text-white font-semibold' : 'text-gray-700'}>
+                                        {block.name}
+                                    </Text>
                                 </TouchableOpacity>
-                                {blocks.map(block => (
-                                    <TouchableOpacity
-                                        key={block.id}
-                                        onPress={() => setSelectedBlockId(block.id)}
-                                        className={`mr-3 px-4 py-2 rounded-full border ${selectedBlockId === block.id ? 'bg-emerald-100 border-emerald-500' : 'bg-white border-gray-200'}`}
-                                    >
-                                        <Text className={selectedBlockId === block.id ? 'text-emerald-700 font-semibold' : 'text-gray-600'}>{block.name}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
+                            ))}
                         </ScrollView>
 
+                        <Text className="text-gray-700 font-semibold mb-2">Start Date (Optional)</Text>
                         <TouchableOpacity
-                            className="bg-emerald-500 p-4 rounded-xl items-center mt-4"
+                            className="bg-gray-100 p-4 rounded-xl mb-4"
+                            onPress={() => setShowStartDatePicker(true)}
+                        >
+                            <Text className="text-gray-900">{formatDate(startDate)}</Text>
+                        </TouchableOpacity>
+
+                        <Text className="text-gray-700 font-semibold mb-2">Due Date (Optional)</Text>
+                        <TouchableOpacity
+                            className="bg-gray-100 p-4 rounded-xl mb-6"
+                            onPress={() => setShowDueDatePicker(true)}
+                        >
+                            <Text className="text-gray-900">{formatDate(dueDate)}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className="bg-emerald-500 p-4 rounded-xl items-center"
                             onPress={handleAddTask}
                         >
                             <Text className="text-white font-bold text-lg">Create Task</Text>
                         </TouchableOpacity>
-                    </View>
+                    </ScrollView>
                 </View>
             </Modal>
+
+            {showStartDatePicker && (
+                <DateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleStartDateChange}
+                />
+            )}
+
+            {showDueDatePicker && (
+                <DateTimePicker
+                    value={dueDate || new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleDueDateChange}
+                />
+            )}
         </SafeAreaView>
     );
 }

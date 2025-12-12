@@ -1,25 +1,31 @@
 import { FontAwesome5 } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
+import React, { useEffect, useMemo } from "react";
 import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EditBlockModal from "../../../components/blocks/EditBlockModal";
 import AddTaskModal from "../../../components/tasks/AddTaskModal";
 import TaskItem from "../../../components/tasks/TaskItem";
-import { useBlocks } from "../../../contexts/BlocksContext";
-import { useTasks } from "../../../contexts/TasksContext";
-import { type Task } from "../../../data/mockData";
+import { useBlockStore } from "../../../src/presentation/stores/blockStore";
+import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
 export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
-    const { blocks, updateBlock } = useBlocks();
-    const block = blocks.find(b => b.id === String(id));
-    const { tasks: allTasks, addTask, updateTask, toggleTaskComplete, deleteTask } = useTasks();
+    const { blocks, loadBlocks, updateBlock } = useBlockStore();
+    const { tasks: allTasks, loadTasks, createTask, updateTask, deleteTask } = useTaskStore();
 
-    // Filter tasks for this specific block from global state
+    const block = blocks.find(b => b.id === String(id));
+
+    // Filter tasks for this specific block
     const tasks = useMemo(() => {
         return allTasks.filter(t => t.blockId === String(id));
     }, [allTasks, id]);
+
+    // Load data on mount
+    useEffect(() => {
+        loadBlocks();
+        loadTasks();
+    }, []);
 
     // Modal visibility state
     const [isEditBlockModalVisible, setEditBlockModalVisible] = React.useState(false);
@@ -27,138 +33,101 @@ export default function BlockDetailsScreen() {
 
     if (!block) {
         return (
-            <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center">
-                <FontAwesome5 name="exclamation-circle" size={48} color="#9ca3af" />
-                <Text className="text-gray-500 mt-4">Block not found</Text>
+            <SafeAreaView className="flex-1 items-center justify-center bg-gray-50">
+                <Text className="text-gray-500">Block not found</Text>
             </SafeAreaView>
         );
     }
 
-    const completedTasks = tasks.filter(t => t.status === "Done").length;
-    const inProgressTasks = tasks.filter(t => t.status === "In Progress").length;
-    const todoTasks = tasks.filter(t => t.status === "Todo").length;
-
     const getStatusColor = (status: string) => {
         switch (status) {
-            case "Planted": return "bg-emerald-100 text-emerald-700";
-            case "Prep": return "bg-amber-100 text-amber-700";
-            case "Fallow": return "bg-gray-100 text-gray-700";
-            default: return "bg-gray-100 text-gray-700";
+            case "Planted": return "bg-emerald-500";
+            case "Prep": return "bg-amber-500";
+            case "Fallow": return "bg-gray-500";
+            default: return "bg-gray-500";
         }
-    };
-
-    const handleEditBlock = (name: string, area: number, status: "Planted" | "Prep" | "Fallow") => {
-        updateBlock(block.id, {
-            name,
-            areaHa: area,
-            status,
-            updatedAt: new Date(),
-        });
-        setEditBlockModalVisible(false);
-    };
-
-    const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
-        const newTask: Task = {
-            ...taskData,
-            id: String(Date.now()),
-            createdAt: new Date(),
-        };
-        addTask(newTask);
     };
 
     return (
         <SafeAreaView className="flex-1 bg-gray-50">
-            {/* Header */}
-            <View className="bg-white px-4 py-3 flex-row items-center border-b border-gray-100">
-                <TouchableOpacity onPress={() => router.push('/(tabs)/blocks')} className="mr-3">
-                    <FontAwesome5 name="arrow-left" size={20} color="#374151" />
-                </TouchableOpacity>
-                <Text className="text-xl font-bold text-gray-900 flex-1">Block Details</Text>
-                <TouchableOpacity onPress={() => setEditBlockModalVisible(true)} className="bg-emerald-100 p-2 rounded-lg">
-                    <FontAwesome5 name="edit" size={18} color="#10b981" />
-                </TouchableOpacity>
-            </View>
-
-            <ScrollView className="flex-1 p-4">
-                {/* Block Info Card */}
-                <View className="bg-white rounded-2xl p-6 mb-4 shadow-sm">
-                    <View className="flex-row items-center justify-between mb-4">
+            <ScrollView className="flex-1">
+                {/* Header Section */}
+                <View className="bg-white p-6 mb-4 shadow-sm">
+                    <View className="flex-row justify-between items-start mb-4">
                         <View className="flex-1">
-                            <Text className="text-2xl font-bold text-gray-900 mb-2">{block.name}</Text>
-                            <Text className="text-gray-600 text-lg">{block.areaHa} Hectares</Text>
+                            <Text className="text-3xl font-bold text-gray-900 mb-2">{block.name}</Text>
+                            <Text className="text-lg text-gray-600 mb-3">{block.areaHa} Hectares</Text>
+                            <View className={`self-start px-4 py-2 rounded-full ${getStatusColor(block.status)}`}>
+                                <Text className="text-white font-semibold">{block.status}</Text>
+                            </View>
                         </View>
-                        <View className={`px-4 py-2 rounded-full ${getStatusColor(block.status)}`}>
-                            <Text className="font-semibold">{block.status}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* Stats Cards */}
-                <View className="flex-row mb-4 gap-3">
-                    <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-                        <Text className="text-gray-500 text-sm mb-1">Total Tasks</Text>
-                        <Text className="text-2xl font-bold text-gray-900">{tasks.length}</Text>
-                    </View>
-                    <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-                        <Text className="text-gray-500 text-sm mb-1">Completed</Text>
-                        <Text className="text-2xl font-bold text-emerald-600">{completedTasks}</Text>
-                    </View>
-                    <View className="flex-1 bg-white rounded-xl p-4 shadow-sm">
-                        <Text className="text-gray-500 text-sm mb-1">Pending</Text>
-                        <Text className="text-2xl font-bold text-amber-600">{todoTasks + inProgressTasks}</Text>
+                        <TouchableOpacity
+                            className="bg-gray-100 p-3 rounded-full"
+                            onPress={() => setEditBlockModalVisible(true)}
+                        >
+                            <FontAwesome5 name="edit" size={18} color="#374151" />
+                        </TouchableOpacity>
                     </View>
                 </View>
 
                 {/* Tasks Section */}
-                <View className="mb-4">
+                <View className="px-4 mb-4">
                     <View className="flex-row justify-between items-center mb-3">
-                        <Text className="text-lg font-bold text-gray-900">Tasks</Text>
-                        <TouchableOpacity
-                            onPress={() => setAddTaskModalVisible(true)}
-                            className="bg-emerald-500 px-4 py-2 rounded-lg flex-row items-center"
-                        >
-                            <FontAwesome5 name="plus" size={14} color="white" />
-                            <Text className="text-white font-semibold ml-2">Add Task</Text>
-                        </TouchableOpacity>
+                        <Text className="text-xl font-bold text-gray-900">Tasks</Text>
+                        <Text className="text-gray-500">{tasks.length} tasks</Text>
                     </View>
-                    {tasks.length > 0 ? (
-                        <FlatList
-                            data={tasks}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
-                                <TaskItem
-                                    task={item}
-                                    blocks={blocks}
-                                    onToggleComplete={toggleTaskComplete}
-                                    onUpdate={updateTask}
-                                    onDelete={deleteTask}
-                                />
-                            )}
-                            scrollEnabled={false}
-                        />
-                    ) : (
-                        <View className="bg-white rounded-xl p-8 items-center">
-                            <FontAwesome5 name="clipboard-list" size={40} color="#d1d5db" />
-                            <Text className="text-gray-400 mt-3">No tasks assigned to this block</Text>
-                        </View>
-                    )}
+
+                    <TouchableOpacity
+                        className="bg-emerald-500 p-4 rounded-xl items-center mb-4"
+                        onPress={() => setAddTaskModalVisible(true)}
+                    >
+                        <Text className="text-white font-bold">Add Task</Text>
+                    </TouchableOpacity>
+
+                    <FlatList
+                        data={tasks}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <TaskItem
+                                task={item}
+                                onUpdate={updateTask}
+                                onDelete={deleteTask}
+                                showBlockSelector={false}
+                            />
+                        )}
+                        scrollEnabled={false}
+                        ListEmptyComponent={
+                            <View className="items-center justify-center py-12">
+                                <FontAwesome5 name="tasks" size={48} color="#d1d5db" />
+                                <Text className="text-gray-400 mt-4 text-center">
+                                    No tasks yet.{'\n'}Add your first task!
+                                </Text>
+                            </View>
+                        }
+                    />
                 </View>
             </ScrollView>
 
-            {/* Modals */}
             <EditBlockModal
                 visible={isEditBlockModalVisible}
                 block={block}
                 onClose={() => setEditBlockModalVisible(false)}
-                onSave={handleEditBlock}
+                onSave={async (blockId, updates) => {
+                    await updateBlock(blockId, updates);
+                    setEditBlockModalVisible(false);
+                }}
             />
 
             <AddTaskModal
                 visible={isAddTaskModalVisible}
-                blockId={block.id}
-                blockName={block.name}
                 onClose={() => setAddTaskModalVisible(false)}
-                onAdd={handleAddTask}
+                onSave={async (task) => {
+                    await createTask({
+                        ...task,
+                        blockId: String(id),
+                    });
+                    setAddTaskModalVisible(false);
+                }}
             />
         </SafeAreaView>
     );
