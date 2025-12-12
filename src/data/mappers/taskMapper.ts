@@ -15,7 +15,7 @@ interface TaskDbModel {
   createdAt: string;
   updatedAt: string;
   syncedAt: string | null;
-  isDeleted: number;
+  isDeleted: boolean;
 }
 
 /**
@@ -38,7 +38,7 @@ export const taskMapper = {
       new Date(db.createdAt),
       new Date(db.updatedAt),
       db.syncedAt ? new Date(db.syncedAt) : null,
-      db.isDeleted === 1
+      db.isDeleted
     );
   },
 
@@ -58,7 +58,7 @@ export const taskMapper = {
       createdAt: domain.createdAt.toISOString(),
       updatedAt: domain.updatedAt.toISOString(),
       syncedAt: domain.syncedAt ? domain.syncedAt.toISOString() : null,
-      isDeleted: domain.isDeleted ? 1 : 0,
+      isDeleted: domain.isDeleted,
     };
   },
 };

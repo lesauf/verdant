@@ -16,7 +16,7 @@ export class TaskRepository {
     const rows = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.isDeleted, 0));
+      .where(eq(tasks.isDeleted, false));
     
     return rows.map(taskMapper.toDomain);
   }
@@ -28,7 +28,7 @@ export class TaskRepository {
     const rows = await db
       .select()
       .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.isDeleted, 0)));
+      .where(and(eq(tasks.id, id), eq(tasks.isDeleted, false)));
     
     return rows.length > 0 ? taskMapper.toDomain(rows[0]) : null;
   }
@@ -91,7 +91,7 @@ export class TaskRepository {
     await db
       .update(tasks)
       .set({
-        isDeleted: 1,
+        isDeleted: true,
         updatedAt: new Date(),
       })
       .where(eq(tasks.id, id));
