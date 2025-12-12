@@ -1,26 +1,30 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import type { Block, Task } from "../data/mockData";
+import EditTaskModal from "./EditTaskModal";
 
 interface TaskItemProps {
     task: Task;
     blocks: Block[];
     onToggleComplete: (taskId: string) => void;
-    onEdit: (task: Task) => void;
+    onUpdate: (taskId: string, updates: Partial<Task>) => void;
     onDelete: (taskId: string) => void;
     showActions?: boolean;
+    showBlockSelector?: boolean; // Whether to show block selector in edit modal
 }
 
 export default function TaskItem({
     task,
     blocks,
     onToggleComplete,
-    onEdit,
+    onUpdate,
     onDelete,
-    showActions = true
+    showActions = true,
+    showBlockSelector = true
 }: TaskItemProps) {
     const [showDescription, setShowDescription] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
 
     const blockName = blocks.find(b => b.id === task.blockId)?.name;
     const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "Done";
@@ -28,6 +32,25 @@ export default function TaskItem({
     const formatDate = (date: Date | null | undefined) => {
         if (!date) return null;
         return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    const handleEdit = () => {
+        setShowEditModal(true);
+    };
+
+    const handleDelete = () => {
+        Alert.alert(
+            "Delete Task",
+            "Are you sure you want to delete this task?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => onDelete(task.id)
+                }
+            ]
+        );
     };
 
     return (
@@ -81,13 +104,13 @@ export default function TaskItem({
                     {showActions && (
                         <View className="flex-row gap-2">
                             <TouchableOpacity
-                                onPress={() => onEdit(task)}
+                                onPress={handleEdit}
                                 className="p-2"
                             >
                                 <FontAwesome5 name="edit" size={16} color="#6b7280" />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                onPress={() => onDelete(task.id)}
+                                onPress={handleDelete}
                                 className="p-2"
                             >
                                 <FontAwesome5 name="trash" size={16} color="#ef4444" />
@@ -114,12 +137,12 @@ export default function TaskItem({
                             <View className="flex-1 mr-4">
                                 <Text className="text-xl font-bold text-gray-900 mb-2">{task.title}</Text>
                                 <View className={`px-3 py-1 rounded-full self-start ${task.status === 'Done' ? 'bg-emerald-100' :
-                                        task.status === 'In Progress' ? 'bg-amber-100' :
-                                            'bg-gray-100'
+                                    task.status === 'In Progress' ? 'bg-amber-100' :
+                                        'bg-gray-100'
                                     }`}>
                                     <Text className={`text-xs font-semibold ${task.status === 'Done' ? 'text-emerald-700' :
-                                            task.status === 'In Progress' ? 'text-amber-700' :
-                                                'text-gray-700'
+                                        task.status === 'In Progress' ? 'text-amber-700' :
+                                            'text-gray-700'
                                         }`}>
                                         {task.status}
                                     </Text>
@@ -171,6 +194,15 @@ export default function TaskItem({
                     </View>
                 </TouchableOpacity>
             </Modal>
+
+            {/* Edit Task Modal - Encapsulated */}
+            <EditTaskModal
+                visible={showEditModal}
+                task={task}
+                blocks={showBlockSelector ? blocks : undefined}
+                onClose={() => setShowEditModal(false)}
+                onSave={onUpdate}
+            />
         </>
     );
 }

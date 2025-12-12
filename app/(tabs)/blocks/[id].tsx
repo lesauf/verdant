@@ -3,6 +3,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useMemo } from "react";
 import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AddTaskModal from "../../../components/AddTaskModal";
+import EditBlockModal from "../../../components/EditBlockModal";
 import TaskItem from "../../../components/TaskItem";
 import { useBlocks } from "../../../contexts/BlocksContext";
 import { useTasks } from "../../../contexts/TasksContext";
@@ -10,14 +12,18 @@ import { type Task } from "../../../data/mockData";
 
 export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
-    const { blocks } = useBlocks();
+    const { blocks, updateBlock } = useBlocks();
     const block = blocks.find(b => b.id === String(id));
-    const { tasks: allTasks, toggleTaskComplete, deleteTask } = useTasks();
+    const { tasks: allTasks, addTask, updateTask, toggleTaskComplete, deleteTask } = useTasks();
 
     // Filter tasks for this specific block from global state
     const tasks = useMemo(() => {
         return allTasks.filter(t => t.blockId === String(id));
     }, [allTasks, id]);
+
+    // Modal visibility state
+    const [isEditBlockModalVisible, setEditBlockModalVisible] = React.useState(false);
+    const [isAddTaskModalVisible, setAddTaskModalVisible] = React.useState(false);
 
     if (!block) {
         return (
@@ -41,13 +47,23 @@ export default function BlockDetailsScreen() {
         }
     };
 
-    const handleEdit = (task: Task) => {
-        // Navigate to tasks screen
-        router.push("/(tabs)/tasks");
+    const handleEditBlock = (name: string, area: number, status: "Planted" | "Prep" | "Fallow") => {
+        updateBlock(block.id, {
+            name,
+            areaHa: area,
+            status,
+            updatedAt: new Date(),
+        });
+        setEditBlockModalVisible(false);
     };
 
-    const handleDelete = (taskId: string) => {
-        deleteTask(taskId);
+    const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt'>) => {
+        const newTask: Task = {
+            ...taskData,
+            id: String(Date.now()),
+            createdAt: new Date(),
+        };
+        addTask(newTask);
     };
 
     return (
@@ -58,6 +74,9 @@ export default function BlockDetailsScreen() {
                     <FontAwesome5 name="arrow-left" size={20} color="#374151" />
                 </TouchableOpacity>
                 <Text className="text-xl font-bold text-gray-900 flex-1">Block Details</Text>
+                <TouchableOpacity onPress={() => setEditBlockModalVisible(true)} className="bg-emerald-100 p-2 rounded-lg">
+                    <FontAwesome5 name="edit" size={18} color="#10b981" />
+                </TouchableOpacity>
             </View>
 
             <ScrollView className="flex-1 p-4">
@@ -92,7 +111,16 @@ export default function BlockDetailsScreen() {
 
                 {/* Tasks Section */}
                 <View className="mb-4">
-                    <Text className="text-lg font-bold text-gray-900 mb-3">Tasks</Text>
+                    <View className="flex-row justify-between items-center mb-3">
+                        <Text className="text-lg font-bold text-gray-900">Tasks</Text>
+                        <TouchableOpacity
+                            onPress={() => setAddTaskModalVisible(true)}
+                            className="bg-emerald-500 px-4 py-2 rounded-lg flex-row items-center"
+                        >
+                            <FontAwesome5 name="plus" size={14} color="white" />
+                            <Text className="text-white font-semibold ml-2">Add Task</Text>
+                        </TouchableOpacity>
+                    </View>
                     {tasks.length > 0 ? (
                         <FlatList
                             data={tasks}
@@ -102,9 +130,8 @@ export default function BlockDetailsScreen() {
                                     task={item}
                                     blocks={blocks}
                                     onToggleComplete={toggleTaskComplete}
-                                    onEdit={handleEdit}
-                                    onDelete={handleDelete}
-                                    showActions={false}
+                                    onUpdate={updateTask}
+                                    onDelete={deleteTask}
                                 />
                             )}
                             scrollEnabled={false}
@@ -118,13 +145,21 @@ export default function BlockDetailsScreen() {
                 </View>
             </ScrollView>
 
-            {/* Add Task FAB */}
-            <TouchableOpacity
-                className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
-                onPress={() => router.push("/(tabs)/tasks")}
-            >
-                <FontAwesome5 name="plus" size={24} color="white" />
-            </TouchableOpacity>
+            {/* Modals */}
+            <EditBlockModal
+                visible={isEditBlockModalVisible}
+                block={block}
+                onClose={() => setEditBlockModalVisible(false)}
+                onSave={handleEditBlock}
+            />
+
+            <AddTaskModal
+                visible={isAddTaskModalVisible}
+                blockId={block.id}
+                blockName={block.name}
+                onClose={() => setAddTaskModalVisible(false)}
+                onAdd={handleAddTask}
+            />
         </SafeAreaView>
     );
 }
