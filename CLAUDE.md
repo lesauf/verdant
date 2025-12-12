@@ -7,3 +7,5 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Primary Reference
 
 Please see `AGENTS.md` in this same directory for the main project documentation and guidance.
+
+sbp_a2dc5048b1f4984fdceb46c38eae06e66c279f1d
