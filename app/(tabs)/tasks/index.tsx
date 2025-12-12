@@ -3,7 +3,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from "react";
 import { Alert, FlatList, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import TaskItem from "../../../components/TaskItem";
+import TaskItem from "../../../components/tasks/TaskItem";
 import { useBlocks } from "../../../contexts/BlocksContext";
 import { useTasks } from "../../../contexts/TasksContext";
 import { type Task } from "../../../data/mockData";

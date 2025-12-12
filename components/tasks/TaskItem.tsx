@@ -1,7 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import type { Block, Task } from "../data/mockData";
+import type { Block, Task } from "../../data/mockData";
 import EditTaskModal from "./EditTaskModal";
 
 interface TaskItemProps {

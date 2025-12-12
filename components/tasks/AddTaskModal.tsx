@@ -2,7 +2,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React from "react";
 import { Alert, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { type Task } from "../data/mockData";
+import { type Task } from "../../data/mockData";
 
 interface AddTaskModalProps {
     visible: boolean;
@@ -39,12 +39,12 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
 
         onAdd({
             title,
-            description: description || undefined,
+            description: description,
             status: "Todo",
             blockId,
             assignedTo: null,
-            startDate: startDate || undefined,
-            dueDate: dueDate || undefined,
+            startDate: startDate,
+            dueDate: dueDate,
         });
         onClose();
     };

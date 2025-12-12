@@ -1,7 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React from "react";
 import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { type Block } from "../data/mockData";
+import { type Block } from "../../data/mockData";
 
 interface EditBlockModalProps {
     visible: boolean;

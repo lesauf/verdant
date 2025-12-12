@@ -2,7 +2,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React from "react";
 import { Alert, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { type Block, type Task } from "../data/mockData";
+import { type Block, type Task } from "../../data/mockData";
 
 interface EditTaskModalProps {
     visible: boolean;
