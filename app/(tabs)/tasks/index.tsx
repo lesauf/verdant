@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import { Alert, FlatList, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TaskItem from "../../../components/TaskItem";
-import { mockBlocks, mockTasks, type Block, type Task } from "../../../data/mockData";
+import { useTasks } from "../../../contexts/TasksContext";
+import { mockBlocks, type Block, type Task } from "../../../data/mockData";
 
 export default function TasksScreen() {
-    const [tasks, setTasks] = useState<Task[]>(mockTasks);
+    const { tasks, addTask, updateTask, deleteTask, toggleTaskComplete } = useTasks();
     const [blocks] = useState<Block[]>(mockBlocks);
     const [isModalVisible, setModalVisible] = useState(false);
     const [isEditModalVisible, setEditModalVisible] = useState(false);
@@ -34,7 +35,7 @@ export default function TasksScreen() {
         }
 
         const newTask: Task = {
-            id: String(tasks.length + 1),
+            id: String(Date.now()),
             title: newTaskTitle,
             description: newTaskDescription || undefined,
             status: "Todo",
@@ -45,7 +46,7 @@ export default function TasksScreen() {
             createdAt: new Date(),
         };
 
-        setTasks([...tasks, newTask]);
+        addTask(newTask);
         setModalVisible(false);
         setNewTaskTitle("");
         setNewTaskDescription("");
@@ -60,18 +61,13 @@ export default function TasksScreen() {
             return;
         }
 
-        setTasks(tasks.map(task =>
-            task.id === editingTask.id
-                ? {
-                    ...task,
-                    title: editTaskTitle,
-                    description: editTaskDescription || undefined,
-                    blockId: editTaskBlockId || undefined,
-                    startDate: editStartDate || undefined,
-                    dueDate: editDueDate || undefined
-                }
-                : task
-        ));
+        updateTask(editingTask.id, {
+            title: editTaskTitle,
+            description: editTaskDescription || undefined,
+            blockId: editTaskBlockId || undefined,
+            startDate: editStartDate || undefined,
+            dueDate: editDueDate || undefined
+        });
         setEditModalVisible(false);
         setEditingTask(null);
         setEditTaskTitle("");
@@ -90,18 +86,14 @@ export default function TasksScreen() {
                 {
                     text: "Delete",
                     style: "destructive",
-                    onPress: () => setTasks(tasks.filter(task => task.id !== taskId))
+                    onPress: () => deleteTask(taskId)
                 }
             ]
         );
     };
 
-    const toggleTaskComplete = (taskId: string) => {
-        setTasks(tasks.map(task =>
-            task.id === taskId
-                ? { ...task, status: task.status === "Done" ? "Todo" : "Done" }
-                : task
-        ));
+    const handleToggleTaskComplete = (taskId: string) => {
+        toggleTaskComplete(taskId);
     };
 
     const openEditModal = (task: Task) => {
@@ -133,7 +125,7 @@ export default function TasksScreen() {
                     <TaskItem
                         task={item}
                         blocks={blocks}
-                        onToggleComplete={toggleTaskComplete}
+                        onToggleComplete={handleToggleTaskComplete}
                         onEdit={openEditModal}
                         onDelete={handleDeleteTask}
                     />

@@ -1,26 +1,21 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TaskItem from "../../../components/TaskItem";
-import { mockBlocks, mockTasks, type Task } from "../../../data/mockData";
+import { useTasks } from "../../../contexts/TasksContext";
+import { mockBlocks, type Task } from "../../../data/mockData";
 
 export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const block = mockBlocks.find(b => b.id === String(id));
+    const { tasks: allTasks, toggleTaskComplete, deleteTask } = useTasks();
 
-    // Filter tasks for this specific block
-    const blockTasks = useMemo(() => {
-        return mockTasks.filter(t => t.blockId === String(id));
-    }, [id, mockTasks]);
-
-    const [tasks, setTasks] = useState<Task[]>(() => blockTasks);
-
-    // Update tasks when block changes
-    useEffect(() => {
-        setTasks(blockTasks);
-    }, [blockTasks]);
+    // Filter tasks for this specific block from global state
+    const tasks = useMemo(() => {
+        return allTasks.filter(t => t.blockId === String(id));
+    }, [allTasks, id]);
 
     if (!block) {
         return (
@@ -44,21 +39,13 @@ export default function BlockDetailsScreen() {
         }
     };
 
-    const toggleTaskComplete = (taskId: string) => {
-        setTasks(tasks.map(task =>
-            task.id === taskId
-                ? { ...task, status: task.status === "Done" ? "Todo" : "Done" }
-                : task
-        ));
-    };
-
     const handleEdit = (task: Task) => {
         // Navigate to tasks screen
         router.push("/(tabs)/tasks");
     };
 
     const handleDelete = (taskId: string) => {
-        setTasks(tasks.filter(task => task.id !== taskId));
+        deleteTask(taskId);
     };
 
     return (
