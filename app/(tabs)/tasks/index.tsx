@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import { Alert, FlatList, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TaskItem from "../../../components/TaskItem";
+import { useBlocks } from "../../../contexts/BlocksContext";
 import { useTasks } from "../../../contexts/TasksContext";
-import { mockBlocks, type Block, type Task } from "../../../data/mockData";
+import { type Task } from "../../../data/mockData";
 
 export default function TasksScreen() {
     const { tasks, addTask, updateTask, deleteTask, toggleTaskComplete } = useTasks();
-    const [blocks] = useState<Block[]>(mockBlocks);
+    const { blocks } = useBlocks();
     const [isModalVisible, setModalVisible] = useState(false);
     const [isEditModalVisible, setEditModalVisible] = useState(false);
     const [newTaskTitle, setNewTaskTitle] = useState("");

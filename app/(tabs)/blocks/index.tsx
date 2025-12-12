@@ -3,10 +3,11 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, FlatList, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { mockBlocks, type Block } from "../../../data/mockData";
+import { useBlocks } from "../../../contexts/BlocksContext";
+import { type Block } from "../../../data/mockData";
 
 export default function BlocksScreen() {
-    const [blocks, setBlocks] = useState<Block[]>(mockBlocks);
+    const { blocks, addBlock } = useBlocks();
     const [isModalVisible, setModalVisible] = useState(false);
     const [newBlockName, setNewBlockName] = useState("");
     const [newBlockArea, setNewBlockArea] = useState("");
@@ -18,7 +19,7 @@ export default function BlocksScreen() {
         }
 
         const newBlock: Block = {
-            id: String(blocks.length + 1),
+            id: String(Date.now()),
             name: newBlockName,
             areaHa: parseFloat(newBlockArea),
             status: "Prep",
@@ -27,7 +28,7 @@ export default function BlocksScreen() {
             updatedAt: new Date(),
         };
 
-        setBlocks([...blocks, newBlock]);
+        addBlock(newBlock);
         setModalVisible(false);
         setNewBlockName("");
         setNewBlockArea("");

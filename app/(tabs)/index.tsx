@@ -3,23 +3,26 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { mockBlocks, mockTasks } from "../../data/mockData";
+import { useBlocks } from "../../contexts/BlocksContext";
+import { useTasks } from "../../contexts/TasksContext";
 
 export default function DashboardScreen() {
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const { blocks } = useBlocks();
+  const { tasks } = useTasks();
 
   // Calculate real stats
-  const totalBlocks = mockBlocks.length;
-  const totalArea = mockBlocks.reduce((sum, block) => sum + block.areaHa, 0);
-  const totalTasks = mockTasks.length;
-  const completedTasks = mockTasks.filter(t => t.status === "Done").length;
-  const inProgressTasks = mockTasks.filter(t => t.status === "In Progress").length;
-  const todoTasks = mockTasks.filter(t => t.status === "Todo").length;
+  const totalBlocks = blocks.length;
+  const totalArea = blocks.reduce((sum, block) => sum + block.areaHa, 0);
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === "Done").length;
+  const inProgressTasks = tasks.filter(t => t.status === "In Progress").length;
+  const todoTasks = tasks.filter(t => t.status === "Todo").length;
 
   // Blocks by status
-  const plantedBlocks = mockBlocks.filter(b => b.status === "Planted").length;
-  const prepBlocks = mockBlocks.filter(b => b.status === "Prep").length;
-  const fallowBlocks = mockBlocks.filter(b => b.status === "Fallow").length;
+  const plantedBlocks = blocks.filter(b => b.status === "Planted").length;
+  const prepBlocks = blocks.filter(b => b.status === "Prep").length;
+  const fallowBlocks = blocks.filter(b => b.status === "Fallow").length;
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">

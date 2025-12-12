@@ -1,58 +1,36 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
 import { mockTasks, type Task } from "../data/mockData";
+import { createDataContext } from "./createDataContext";
 
-interface TasksContextType {
-    tasks: Task[];
-    addTask: (task: Task) => void;
-    updateTask: (taskId: string, updates: Partial<Task>) => void;
-    deleteTask: (taskId: string) => void;
-    toggleTaskComplete: (taskId: string) => void;
-}
+/**
+ * TasksContext - Global state management for farm tasks
+ * Created using the generic context factory to eliminate code duplication
+ */
 
-const TasksContext = createContext<TasksContextType | undefined>(undefined);
+const { DataProvider, useData } = createDataContext<Task>(
+    "TasksContext",
+    mockTasks
+);
 
-export function TasksProvider({ children }: { children: ReactNode }) {
-    const [tasks, setTasks] = useState<Task[]>(mockTasks);
+// Export with semantic naming
+export const TasksProvider = DataProvider;
+export const useTasks = () => {
+    const { items, addItem, updateItem, deleteItem } = useData();
 
-    const addTask = (task: Task) => {
-        setTasks(prevTasks => [...prevTasks, task]);
-    };
-
-    const updateTask = (taskId: string, updates: Partial<Task>) => {
-        setTasks(prevTasks =>
-            prevTasks.map(task =>
-                task.id === taskId ? { ...task, ...updates } : task
-            )
-        );
-    };
-
-    const deleteTask = (taskId: string) => {
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
-    };
-
+    // Add task-specific helper for toggling completion
     const toggleTaskComplete = (taskId: string) => {
-        setTasks(prevTasks =>
-            prevTasks.map(task =>
-                task.id === taskId
-                    ? { ...task, status: task.status === "Done" ? "Todo" : "Done" }
-                    : task
-            )
-        );
+        const task = items.find(t => t.id === taskId);
+        if (task) {
+            updateItem(taskId, {
+                status: task.status === "Done" ? "Todo" : "Done"
+            });
+        }
     };
 
-    return (
-        <TasksContext.Provider
-            value={{ tasks, addTask, updateTask, deleteTask, toggleTaskComplete }}
-        >
-            {children}
-        </TasksContext.Provider>
-    );
-}
-
-export function useTasks() {
-    const context = useContext(TasksContext);
-    if (context === undefined) {
-        throw new Error("useTasks must be used within a TasksProvider");
-    }
-    return context;
-}
+    return {
+        tasks: items,
+        addTask: addItem,
+        updateTask: updateItem,
+        deleteTask: deleteItem,
+        toggleTaskComplete,
+    };
+};

@@ -4,12 +4,14 @@ import React, { useMemo } from "react";
 import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TaskItem from "../../../components/TaskItem";
+import { useBlocks } from "../../../contexts/BlocksContext";
 import { useTasks } from "../../../contexts/TasksContext";
-import { mockBlocks, type Task } from "../../../data/mockData";
+import { type Task } from "../../../data/mockData";
 
 export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
-    const block = mockBlocks.find(b => b.id === String(id));
+    const { blocks } = useBlocks();
+    const block = blocks.find(b => b.id === String(id));
     const { tasks: allTasks, toggleTaskComplete, deleteTask } = useTasks();
 
     // Filter tasks for this specific block from global state
@@ -98,7 +100,7 @@ export default function BlockDetailsScreen() {
                             renderItem={({ item }) => (
                                 <TaskItem
                                     task={item}
-                                    blocks={mockBlocks}
+                                    blocks={blocks}
                                     onToggleComplete={toggleTaskComplete}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
