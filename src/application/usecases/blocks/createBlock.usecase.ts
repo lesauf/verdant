@@ -30,17 +30,17 @@ export class CreateBlockUseCase {
       this.validationService.validateArea(input.areaHa);
 
       // Create domain entity
-      const block = new Block(
-        this.idService.generate(),
-        input.name,
-        input.areaHa,
-        input.status,
-        input.geoJson || null,
-        new Date(),
-        new Date(),
-        null, // Not synced yet
-        false // Not deleted
-      );
+      const block = new Block({
+        id: this.idService.generate(),
+        name: input.name,
+        areaHa: input.areaHa,
+        status: input.status,
+        geoJson: input.geoJson || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        syncedAt: null,
+        isDeleted: false
+      });
 
       // Persist through repository
       return await this.blockRepository.save(block);

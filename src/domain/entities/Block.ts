@@ -1,17 +1,22 @@
 export type BlockStatus = 'Planted' | 'Prep' | 'Fallow';
 
 export class Block {
-  constructor(
-    public readonly id: string,
-    public name: string,
-    public areaHa: number,
-    public status: BlockStatus,
-    public geoJson: any | null,
-    public readonly createdAt: Date,
-    public updatedAt: Date,
-    public syncedAt: Date | null = null,
-    public isDeleted: boolean = false
-  ) {}
+  public readonly id!: string;
+  public name!: string;
+  public areaHa!: number;
+  public status!: BlockStatus;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public geoJson!: any | null;
+  public readonly createdAt!: Date;
+  public updatedAt!: Date;
+  public syncedAt: Date | null = null;
+  public isDeleted: boolean = false;
+
+  constructor(data?: Partial<Block>) {
+    if (data) {
+      Object.assign(this, data);
+    }
+  }
 
   /**
    * Business rule: Can only plant on blocks that are in Prep or Fallow status

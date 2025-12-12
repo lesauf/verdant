@@ -34,20 +34,20 @@ export class CreateTaskUseCase {
       );
 
       // Create domain entity
-      const task = new Task(
-        this.idService.generate(),
-        input.title,
-        input.description || null,
-        input.status || 'Todo',
-        input.blockId || null,
-        input.assignedTo || null,
-        input.startDate || null,
-        input.dueDate || null,
-        new Date(),
-        new Date(),
-        null, // Not synced yet
-        false // Not deleted
-      );
+      const task = new Task({
+        id: this.idService.generate(),
+        title: input.title,
+        description: input.description || null,
+        status: input.status || 'Todo',
+        blockId: input.blockId || null,
+        assignedTo: input.assignedTo || null,
+        startDate: input.startDate || null,
+        dueDate: input.dueDate || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        syncedAt: null,
+        isDeleted: false
+      });
 
       // Persist
       return await this.taskRepository.save(task);

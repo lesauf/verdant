@@ -1,16 +1,16 @@
 export type TaskStatus = 'Todo' | 'In Progress' | 'Done';
 
 export class Task {
-  public readonly id: string;
-  public title: string;
-  public description: string | null;
-  public status: TaskStatus;
-  public blockId: string | null;
-  public assignedTo: string | null;
-  public startDate: Date | null;
-  public dueDate: Date | null;
-  public readonly createdAt: Date;
-  public updatedAt: Date;
+  public readonly id!: string;
+  public title!: string;
+  public description!: string | null;
+  public status!: TaskStatus;
+  public blockId!: string | null;
+  public assignedTo!: string | null;
+  public startDate!: Date | null;
+  public dueDate!: Date | null;
+  public readonly createdAt!: Date;
+  public updatedAt!: Date;
   public syncedAt: Date | null = null;
   public isDeleted: boolean = false;
 

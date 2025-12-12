@@ -23,17 +23,17 @@ export const blockMapper = {
    * Convert database row to domain entity
    */
   toDomain(db: BlockDbModel): Block {
-    return new Block(
-      db.id,
-      db.name,
-      db.areaHa,
-      db.status as any,
-      db.geoJson ? JSON.parse(db.geoJson) : null,
-      new Date(db.createdAt),
-      new Date(db.updatedAt),
-      db.syncedAt ? new Date(db.syncedAt) : null,
-      db.isDeleted === 1
-    );
+    return new Block({
+      id: db.id,
+      name: db.name,
+      areaHa: db.areaHa,
+      status: db.status as any,
+      geoJson: db.geoJson ? JSON.parse(db.geoJson) : null,
+      createdAt: new Date(db.createdAt),
+      updatedAt: new Date(db.updatedAt),
+      syncedAt: db.syncedAt ? new Date(db.syncedAt) : null,
+      isDeleted: db.isDeleted === 1
+    });
   },
 
   /**

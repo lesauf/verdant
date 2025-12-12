@@ -26,20 +26,20 @@ export const taskMapper = {
    * Convert database row to domain entity
    */
   toDomain(db: TaskDbModel): Task {
-    return new Task(
-      db.id,
-      db.title,
-      db.description,
-      db.status as any,
-      db.blockId,
-      db.assignedTo,
-      db.startDate ? new Date(db.startDate) : null,
-      db.dueDate ? new Date(db.dueDate) : null,
-      new Date(db.createdAt),
-      new Date(db.updatedAt),
-      db.syncedAt ? new Date(db.syncedAt) : null,
-      db.isDeleted
-    );
+    return new Task({
+      id: db.id,
+      title: db.title,
+      description: db.description,
+      status: db.status as any,
+      blockId: db.blockId,
+      assignedTo: db.assignedTo,
+      startDate: db.startDate ? new Date(db.startDate) : null,
+      dueDate: db.dueDate ? new Date(db.dueDate) : null,
+      createdAt: new Date(db.createdAt),
+      updatedAt: new Date(db.updatedAt),
+      syncedAt: db.syncedAt ? new Date(db.syncedAt) : null,
+      isDeleted: db.isDeleted
+    });
   },
 
   /**
