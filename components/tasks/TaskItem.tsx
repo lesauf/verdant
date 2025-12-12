@@ -1,12 +1,12 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Alert, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import type { Block, Task } from "../../data/mockData";
+import { Task } from "../../src/domain/entities/Task";
+import { useBlockStore } from "../../src/presentation/stores/blockStore";
 import EditTaskModal from "./EditTaskModal";
 
 interface TaskItemProps {
     task: Task;
-    blocks: Block[];
     onToggleComplete: (taskId: string) => void;
     onUpdate: (taskId: string, updates: Partial<Task>) => void;
     onDelete: (taskId: string) => void;
@@ -16,13 +16,13 @@ interface TaskItemProps {
 
 export default function TaskItem({
     task,
-    blocks,
     onToggleComplete,
     onUpdate,
     onDelete,
     showActions = true,
     showBlockSelector = true
 }: TaskItemProps) {
+    const { blocks } = useBlockStore();
     const [showDescription, setShowDescription] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
