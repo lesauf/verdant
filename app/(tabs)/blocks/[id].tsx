@@ -1,6 +1,6 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import TaskItem from "../../../components/TaskItem";
@@ -13,9 +13,14 @@ export default function BlockDetailsScreen() {
     // Filter tasks for this specific block
     const blockTasks = useMemo(() => {
         return mockTasks.filter(t => t.blockId === String(id));
-    }, [id]);
+    }, [id, mockTasks]);
 
-    const [tasks, setTasks] = useState<Task[]>(blockTasks);
+    const [tasks, setTasks] = useState<Task[]>(() => blockTasks);
+
+    // Update tasks when block changes
+    useEffect(() => {
+        setTasks(blockTasks);
+    }, [blockTasks]);
 
     if (!block) {
         return (
