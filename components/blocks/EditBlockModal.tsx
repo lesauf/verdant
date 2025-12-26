@@ -7,24 +7,24 @@ interface EditBlockModalProps {
     visible: boolean;
     block: Block;
     onClose: () => void;
-    onSave: (name: string, area: number, status: "Planted" | "Prep" | "Fallow") => void;
+    onSave: (id: string, name: string, areaHa: number, status: "Planted" | "Prep" | "Fallow") => void;
 }
 
 export default function EditBlockModal({ visible, block, onClose, onSave }: EditBlockModalProps) {
     const [name, setName] = React.useState(block.name);
-    const [area, setArea] = React.useState(String(block.areaHa));
+    const [areaHa, setAreaHa] = React.useState(String(block.areaHa));
     const [status, setStatus] = React.useState<"Planted" | "Prep" | "Fallow">(block.status as any);
 
     React.useEffect(() => {
         if (visible) {
             setName(block.name);
-            setArea(String(block.areaHa));
+            setAreaHa(String(block.areaHa));
             setStatus(block.status as any);
         }
     }, [visible, block]);
 
     const handleSave = () => {
-        onSave(name, parseFloat(area), status);
+        onSave(block.id, name, parseFloat(areaHa), status);
     };
 
     return (
@@ -56,8 +56,8 @@ export default function EditBlockModal({ visible, block, onClose, onSave }: Edit
                         className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
                         placeholder="e.g. 2.5"
                         keyboardType="numeric"
-                        value={area}
-                        onChangeText={setArea}
+                        value={areaHa}
+                        onChangeText={setAreaHa}
                     />
 
                     <Text className="text-gray-700 font-semibold mb-2">Status</Text>

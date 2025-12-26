@@ -3,11 +3,7 @@ import { AppError } from '../../../infrastructure/errors/AppError';
 import { IdService } from '../../services/id.service';
 import { ValidationService } from '../../services/validation.service';
 
-// Note: BlockRepository will be implemented in Week 3
-// For now we use a placeholder interface
-interface IBlockRepository {
-  save(block: Block): Promise<Block>;
-}
+import { BlockRepository } from '../../../data/repositories/BlockRepository';
 
 export interface CreateBlockInput {
   name: string;
@@ -18,7 +14,7 @@ export interface CreateBlockInput {
 
 export class CreateBlockUseCase {
   constructor(
-    private blockRepository: IBlockRepository,
+    private blockRepository: BlockRepository,
     private idService: IdService,
     private validationService: ValidationService
   ) {}

@@ -1,12 +1,10 @@
 import { Block } from '../../../domain/entities/Block';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-interface IBlockRepository {
-  findById(id: string): Promise<Block | null>;
-}
+import { BlockRepository } from '../../../data/repositories/BlockRepository';
 
 export class GetBlockByIdUseCase {
-  constructor(private blockRepository: IBlockRepository) {}
+  constructor(private blockRepository: BlockRepository) {}
 
   async execute(id: string): Promise<Block> {
     try {

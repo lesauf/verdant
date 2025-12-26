@@ -1,13 +1,9 @@
-import { Block } from '../../../domain/entities/Block';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-interface IBlockRepository {
-  findById(id: string): Promise<Block | null>;
-  delete(id: string): Promise<void>;
-}
+import { BlockRepository } from '../../../data/repositories/BlockRepository';
 
 export class DeleteBlockUseCase {
-  constructor(private blockRepository: IBlockRepository) {}
+  constructor(private blockRepository: BlockRepository) {}
 
   async execute(id: string): Promise<void> {
     try {

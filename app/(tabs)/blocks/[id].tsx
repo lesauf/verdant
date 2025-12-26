@@ -112,8 +112,8 @@ export default function BlockDetailsScreen() {
                 visible={isEditBlockModalVisible}
                 block={block}
                 onClose={() => setEditBlockModalVisible(false)}
-                onSave={async (blockId, updates) => {
-                    await updateBlock(blockId, updates);
+                onSave={async (blockId, name, areaHa, status) => {
+                    await updateBlock(blockId, { name, areaHa, status });
                     setEditBlockModalVisible(false);
                 }}
             />

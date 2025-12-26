@@ -2,10 +2,7 @@ import { Block, BlockStatus } from '../../../domain/entities/Block';
 import { AppError } from '../../../infrastructure/errors/AppError';
 import { ValidationService } from '../../services/validation.service';
 
-interface IBlockRepository {
-  findById(id: string): Promise<Block | null>;
-  update(block: Block): Promise<Block>;
-}
+import { BlockRepository } from '../../../data/repositories/BlockRepository';
 
 export interface UpdateBlockInput {
   name?: string;
@@ -16,7 +13,7 @@ export interface UpdateBlockInput {
 
 export class UpdateBlockUseCase {
   constructor(
-    private blockRepository: IBlockRepository,
+    private blockRepository: BlockRepository,
     private validationService: ValidationService
   ) {}
 
