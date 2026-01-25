@@ -139,10 +139,11 @@ export default function TasksScreen() {
         return date.toLocaleDateString();
     };
 
-    const renderTaskList = (data: any[]) => (
+    const renderTaskList = (data: any[], header?: React.ReactElement) => (
         <FlatList
             data={data}
             keyExtractor={(item) => item.id}
+            ListHeaderComponent={header}
             renderItem={({ item }) => (
                 <TaskItem
                     task={item}
@@ -196,21 +197,20 @@ export default function TasksScreen() {
 
             {viewMode === 'list' && renderTaskList(filteredTasks)}
 
-            {viewMode === 'calendar' && (
-                <View className="flex-1">
+            {viewMode === 'calendar' && renderTaskList(calendarSelectedTasks, (
+                <View>
                     <CalendarView
                         tasks={filteredTasks}
                         currentDate={currentDate}
                         onDateChange={setCurrentDate}
                     />
-                    <View className="flex-1 bg-gray-50 mt-4">
+                    <View className="mt-4 mb-2">
                         <Text className="px-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
                             {format(currentDate, 'MMMM d, yyyy')}
                         </Text>
-                        {renderTaskList(calendarSelectedTasks)}
                     </View>
                 </View>
-            )}
+            ))}
 
             {viewMode === 'gantt' && (
                 <GanttView
