@@ -1,7 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo } from "react";
-import { FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import EditBlockModal from "../../../components/blocks/EditBlockModal";
 import AddTaskModal from "../../../components/tasks/AddTaskModal";
@@ -11,7 +11,7 @@ import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
 export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
-    const { blocks, loadBlocks, updateBlock } = useBlockStore();
+    const { blocks, loadBlocks, updateBlock, deleteBlock } = useBlockStore();
     const { tasks: allTasks, loadTasks, createTask, updateTask, deleteTask, toggleTaskComplete } = useTaskStore();
 
     const block = blocks.find(b => b.id === String(id));
@@ -39,6 +39,24 @@ export default function BlockDetailsScreen() {
         );
     }
 
+    const handleDeleteBlock = () => {
+        Alert.alert(
+            "Delete Block",
+            `Are you sure you want to delete "${block.name}"? This action cannot be undone.`,
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        await deleteBlock(String(id));
+                        router.back();
+                    }
+                }
+            ]
+        );
+    };
+
     const getStatusColor = (status: string) => {
         switch (status) {
             case "Planted": return "bg-emerald-500";
@@ -61,12 +79,20 @@ export default function BlockDetailsScreen() {
                                 <Text className="text-white font-semibold">{block.status}</Text>
                             </View>
                         </View>
-                        <TouchableOpacity
-                            className="bg-gray-100 p-3 rounded-full"
-                            onPress={() => setEditBlockModalVisible(true)}
-                        >
-                            <FontAwesome5 name="edit" size={18} color="#374151" />
-                        </TouchableOpacity>
+                        <View className="flex-row gap-2">
+                            <TouchableOpacity
+                                className="bg-gray-100 p-3 rounded-full"
+                                onPress={() => setEditBlockModalVisible(true)}
+                            >
+                                <FontAwesome5 name="edit" size={18} color="#374151" />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                className="bg-red-50 p-3 rounded-full"
+                                onPress={handleDeleteBlock}
+                            >
+                                <FontAwesome5 name="trash" size={18} color="#ef4444" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
 
