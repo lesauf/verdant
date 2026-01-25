@@ -21,6 +21,7 @@ export const tasks = sqliteTable("tasks", {
   assignedTo: text("assigned_to"),
   startDate: integer("start_date", { mode: "timestamp" }), // Added start date
   dueDate: integer("due_date", { mode: "timestamp" }),
+  completedAt: integer("completed_at", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(), // Added updated at
   syncedAt: integer("synced_at", { mode: "timestamp" }), // For offline-first sync

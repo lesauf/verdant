@@ -8,7 +8,7 @@ import { useBlockStore } from "../../../src/presentation/stores/blockStore";
 import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
 export default function TasksScreen() {
-    const { tasks, loadTasks, createTask, updateTask, deleteTask } = useTaskStore();
+    const { tasks, loadTasks, createTask, updateTask, deleteTask, toggleTaskComplete } = useTaskStore();
     const { blocks, loadBlocks } = useBlockStore();
 
     // Load data on mount
@@ -85,9 +85,18 @@ export default function TasksScreen() {
                 data={tasks}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
+
                     <TaskItem
                         task={item}
-                        onUpdate={updateTask}
+                        toggleTaskComplete={toggleTaskComplete}
+                        onUpdate={(taskId, updates) => updateTask(taskId, {
+                            ...updates,
+                            description: updates.description ?? undefined,
+                            blockId: updates.blockId ?? undefined,
+                            assignedTo: updates.assignedTo ?? undefined,
+                            startDate: updates.startDate ?? undefined,
+                            dueDate: updates.dueDate ?? undefined,
+                        })}
                         onDelete={deleteTask}
                         showBlockSelector={true}
                     />

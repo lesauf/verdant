@@ -12,6 +12,7 @@ interface TaskDbModel {
   assignedTo: string | null;
   startDate: string | null;
   dueDate: string | null;
+  completedAt: string | null;
   createdAt: string;
   updatedAt: string;
   syncedAt: string | null;
@@ -35,6 +36,7 @@ export const taskMapper = {
       assignedTo: db.assignedTo,
       startDate: db.startDate ? new Date(db.startDate) : null,
       dueDate: db.dueDate ? new Date(db.dueDate) : null,
+      completedAt: db.completedAt ? new Date(db.completedAt) : null,
       createdAt: new Date(db.createdAt),
       updatedAt: new Date(db.updatedAt),
       syncedAt: db.syncedAt ? new Date(db.syncedAt) : null,
@@ -55,6 +57,7 @@ export const taskMapper = {
       assignedTo: domain.assignedTo,
       startDate: domain.startDate ? domain.startDate.toISOString() : null,
       dueDate: domain.dueDate ? domain.dueDate.toISOString() : null,
+      completedAt: domain.completedAt ? domain.completedAt.toISOString() : null,
       createdAt: domain.createdAt.toISOString(),
       updatedAt: domain.updatedAt.toISOString(),
       syncedAt: domain.syncedAt ? domain.syncedAt.toISOString() : null,

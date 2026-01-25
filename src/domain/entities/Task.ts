@@ -13,6 +13,7 @@ export class Task {
   public updatedAt!: Date;
   public syncedAt: Date | null = null;
   public isDeleted: boolean = false;
+  public completedAt: Date | null = null;
 
   constructor(data?: Partial<Task>) {
     if (data) {
@@ -45,6 +46,19 @@ export class Task {
       throw new Error('Task is already completed');
     }
     this.status = 'Done';
+    this.completedAt = new Date();
+    this.updatedAt = new Date();
+  }
+
+  /**
+   * Uncomplete task (revert to Todo)
+   */
+  uncomplete(): void {
+    if (this.status !== 'Done') {
+      throw new Error('Task is not completed');
+    }
+    this.status = 'Todo';
+    this.completedAt = null;
     this.updatedAt = new Date();
   }
 

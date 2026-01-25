@@ -74,6 +74,23 @@ const runMigrations = () => {
       console.log("Migration 0001 completed.");
     }
     
+    console.log("Migration 0001 completed.");
+
+    // Check if migration 0002 has been applied
+    const columnsCheckTasks = expoDb.getAllSync<{ name: string }>(
+      "PRAGMA table_info(tasks)"
+    );
+    const hasCompletedAtColumn = columnsCheckTasks.some((col) => col.name === "completed_at");
+    
+    if (!hasCompletedAtColumn) {
+      console.log("Running migration 0002...");
+      
+      // Migration 0002: Add completed_at column
+      expoDb.execSync(`ALTER TABLE tasks ADD completed_at integer;`);
+      
+      console.log("Migration 0002 completed.");
+    }
+    
     console.log("All migrations completed successfully.");
   } catch (error) {
     console.error("Migration error:", error);

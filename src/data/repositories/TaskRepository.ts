@@ -48,6 +48,7 @@ export class TaskRepository {
       assignedTo: dbModel.assignedTo,
       startDate: dbModel.startDate ? new Date(dbModel.startDate) : null,
       dueDate: dbModel.dueDate ? new Date(dbModel.dueDate) : null,
+      completedAt: dbModel.completedAt ? new Date(dbModel.completedAt) : null,
       createdAt: new Date(dbModel.createdAt),
       updatedAt: new Date(dbModel.updatedAt),
       syncedAt: dbModel.syncedAt ? new Date(dbModel.syncedAt) : null,
@@ -75,6 +76,7 @@ export class TaskRepository {
         assignedTo: dbModel.assignedTo,
         startDate: dbModel.startDate ? new Date(dbModel.startDate) : null,
         dueDate: dbModel.dueDate ? new Date(dbModel.dueDate) : null,
+        completedAt: dbModel.completedAt ? new Date(dbModel.completedAt) : null,
         updatedAt: new Date(dbModel.updatedAt),
       })
       .where(eq(tasks.id, task.id));

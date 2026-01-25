@@ -30,8 +30,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="blocks/index"
         options={{
-          title: "Map",
-          tabBarIcon: ({ color }) => <FontAwesome5 name="map-marked-alt" size={24} color={color} />,
+          title: "Blocks",
+          tabBarIcon: ({ color }) => <FontAwesome5 name="th-large" size={24} color={color} />,
         }}
       />
       <Tabs.Screen

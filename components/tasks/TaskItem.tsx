@@ -7,7 +7,7 @@ import EditTaskModal from "./EditTaskModal";
 
 interface TaskItemProps {
     task: Task;
-    onToggleComplete: (taskId: string) => void;
+    toggleTaskComplete: (taskId: string) => void;
     onUpdate: (taskId: string, updates: Partial<Task>) => void;
     onDelete: (taskId: string) => void;
     showActions?: boolean;
@@ -16,7 +16,7 @@ interface TaskItemProps {
 
 export default function TaskItem({
     task,
-    onToggleComplete,
+    toggleTaskComplete,
     onUpdate,
     onDelete,
     showActions = true,
@@ -58,7 +58,7 @@ export default function TaskItem({
             <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
                 <View className="flex-row items-center">
                     <TouchableOpacity
-                        onPress={() => onToggleComplete(task.id)}
+                        onPress={() => toggleTaskComplete(task.id)}
                         className="mr-4"
                     >
                         <View className={`w-6 h-6 rounded-full items-center justify-center ${task.status === 'Done' ? 'bg-emerald-500' : 'border-2 border-gray-300'
@@ -179,6 +179,14 @@ export default function TaskItem({
                                         <FontAwesome5 name="calendar" size={14} color={isOverdue ? "#ef4444" : "#6b7280"} />
                                         <Text className={`ml-2 ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
                                             Due: {formatDate(task.dueDate)}
+                                        </Text>
+                                    </View>
+                                )}
+                                {task.completedAt && (
+                                    <View className="flex-row items-center">
+                                        <FontAwesome5 name="calendar" size={14} color={isOverdue ? "#ef4444" : "#6b7280"} />
+                                        <Text className={`ml-2 ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
+                                            Completed: {formatDate(task.completedAt)}
                                         </Text>
                                     </View>
                                 )}

@@ -12,7 +12,7 @@ import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { blocks, loadBlocks, updateBlock } = useBlockStore();
-    const { tasks: allTasks, loadTasks, createTask, updateTask, deleteTask } = useTaskStore();
+    const { tasks: allTasks, loadTasks, createTask, updateTask, deleteTask, toggleTaskComplete } = useTaskStore();
 
     const block = blocks.find(b => b.id === String(id));
 
@@ -90,7 +90,15 @@ export default function BlockDetailsScreen() {
                         renderItem={({ item }) => (
                             <TaskItem
                                 task={item}
-                                onUpdate={updateTask}
+                                toggleTaskComplete={toggleTaskComplete}
+                                onUpdate={(taskId, updates) => updateTask(taskId, {
+                                    ...updates,
+                                    description: updates.description ?? undefined,
+                                    blockId: updates.blockId ?? undefined,
+                                    assignedTo: updates.assignedTo ?? undefined,
+                                    startDate: updates.startDate ?? undefined,
+                                    dueDate: updates.dueDate ?? undefined,
+                                })}
                                 onDelete={deleteTask}
                                 showBlockSelector={false}
                             />
@@ -120,10 +128,16 @@ export default function BlockDetailsScreen() {
 
             <AddTaskModal
                 visible={isAddTaskModalVisible}
+                blockId={String(id)}
+                blockName={block.name}
                 onClose={() => setAddTaskModalVisible(false)}
-                onSave={async (task) => {
+                onAdd={async (task) => {
                     await createTask({
                         ...task,
+                        description: task.description ?? undefined,
+                        assignedTo: task.assignedTo ?? undefined,
+                        startDate: task.startDate ?? undefined,
+                        dueDate: task.dueDate ?? undefined,
                         blockId: String(id),
                     });
                     setAddTaskModalVisible(false);

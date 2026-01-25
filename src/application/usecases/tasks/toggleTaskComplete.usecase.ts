@@ -19,7 +19,7 @@ export class ToggleTaskCompleteUseCase {
 
       // Toggle completion using domain logic
       if (task.status === 'Done') {
-        task.status = 'Todo';
+        task.uncomplete();
       } else {
         task.complete(); // Uses domain method
       }
