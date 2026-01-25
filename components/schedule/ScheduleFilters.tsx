@@ -9,6 +9,8 @@ interface ScheduleFiltersProps {
     selectedBlockId: string | null;
     setSelectedBlockId: (id: string | null) => void;
     blocks: Block[];
+    statusFilter: 'pending' | 'completed';
+    setStatusFilter: (status: 'pending' | 'completed') => void;
 }
 
 export default function ScheduleFilters({
@@ -16,6 +18,8 @@ export default function ScheduleFilters({
     setViewMode,
     selectedBlockId,
     setSelectedBlockId,
+    statusFilter,
+    setStatusFilter,
     blocks
 }: ScheduleFiltersProps) {
     return (
@@ -39,6 +43,22 @@ export default function ScheduleFilters({
                     onPress={() => setViewMode('gantt')}
                 >
                     <FontAwesome5 name="stream" size={14} color={viewMode === 'gantt' ? "#10b981" : "#6b7280"} />
+                </Pressable>
+            </View>
+
+            {/* Status Filter */}
+            <View style={styles.statusContainer}>
+                <Pressable
+                    style={[styles.statusButton, statusFilter === 'pending' && styles.statusButtonActive]}
+                    onPress={() => setStatusFilter('pending')}
+                >
+                    <Text style={[styles.statusText, statusFilter === 'pending' && styles.statusTextActive]}>To Do</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.statusButton, statusFilter === 'completed' && styles.statusButtonActive]}
+                    onPress={() => setStatusFilter('completed')}
+                >
+                    <Text style={[styles.statusText, statusFilter === 'completed' && styles.statusTextActive]}>Done</Text>
                 </Pressable>
             </View>
 
@@ -70,7 +90,6 @@ export default function ScheduleFilters({
                         </Text>
                     </Pressable>
                 ))}
-                <View style={{ width: 16 }} />
             </ScrollView>
         </View>
     );
@@ -103,6 +122,37 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 1,
         elevation: 1,
+    },
+    statusContainer: {
+        flexDirection: 'row',
+        padding: 4,
+        marginHorizontal: 16,
+        marginTop: 8,
+        backgroundColor: '#f3f4f6',
+        borderRadius: 8,
+    },
+    statusButton: {
+        flex: 1,
+        paddingVertical: 6,
+        alignItems: 'center',
+        borderRadius: 6,
+    },
+    statusButtonActive: {
+        backgroundColor: 'white',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 1,
+        elevation: 1,
+    },
+    statusText: {
+        fontSize: 13,
+        fontWeight: '500',
+        color: '#6b7280',
+    },
+    statusTextActive: {
+        color: '#10b981',
+        fontWeight: '600',
     },
     filterScroll: {
         paddingVertical: 12,

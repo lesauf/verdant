@@ -1,14 +1,15 @@
 import { addDays, differenceInDays, format, startOfDay } from "date-fns";
 import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Task } from "../../src/domain/entities/Task";
 
 interface GanttViewProps {
     tasks: Task[];
     currentDate: Date;
+    onTaskPress?: (task: Task) => void;
 }
 
-export default function GanttView({ tasks, currentDate }: GanttViewProps) {
+export default function GanttView({ tasks, currentDate, onTaskPress }: GanttViewProps) {
     const daysToShow = 7;
     const dates = Array.from({ length: daysToShow }, (_, i) => addDays(currentDate, i));
 
@@ -18,11 +19,15 @@ export default function GanttView({ tasks, currentDate }: GanttViewProps) {
                 {/* Left Column: Tasks */}
                 <View className="w-1/3 border-r border-gray-200 bg-white pt-10">
                     {tasks.map(task => (
-                        <View key={task.id} className="h-12 justify-center px-2 border-b border-gray-100">
+                        <TouchableOpacity
+                            key={task.id}
+                            className="h-12 justify-center px-2 border-b border-gray-100"
+                            onPress={() => onTaskPress?.(task)}
+                        >
                             <Text className="text-xs font-medium text-gray-700" numberOfLines={1}>
                                 {task.title}
                             </Text>
-                        </View>
+                        </TouchableOpacity>
                     ))}
                 </View>
 
@@ -79,13 +84,14 @@ export default function GanttView({ tasks, currentDate }: GanttViewProps) {
                                             const bgColor = task.status === 'Done' ? 'bg-emerald-500' : 'bg-blue-500';
 
                                             return (
-                                                <View
+                                                <TouchableOpacity
                                                     className={`absolute h-6 rounded-md ${bgColor} opacity-80`}
                                                     style={{
                                                         left: visualLeft,
                                                         width: visualWidth - 4, // margin
                                                         marginLeft: 2
                                                     }}
+                                                    onPress={() => onTaskPress?.(task)}
                                                 />
                                             );
                                         })()

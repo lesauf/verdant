@@ -1,5 +1,6 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { format, isSameDay } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, FlatList, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +9,7 @@ import DateNavigation from "../../../components/schedule/DateNavigation";
 import GanttView from "../../../components/schedule/GanttView";
 import ScheduleFilters from "../../../components/schedule/ScheduleFilters";
 import TaskItem from "../../../components/tasks/TaskItem";
+import ViewTaskModal from "../../../components/tasks/ViewTaskModal";
 import { useBlockStore } from "../../../src/presentation/stores/blockStore";
 import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
@@ -17,6 +19,7 @@ export default function TasksScreen() {
 
     // View State
     const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'gantt'>('list');
+    const [statusFilter, setStatusFilter] = useState<'pending' | 'completed'>('pending');
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -29,12 +32,52 @@ export default function TasksScreen() {
     // Filter tasks
     const filteredTasks = useMemo(() => {
         let result = tasks;
+
+        // 1. Block Filter
         if (selectedBlockId) {
             result = result.filter(t => t.blockId === selectedBlockId);
         }
-        // Additional sorting or filtering could go here
+
+        // 2. Status Filter
+        if (statusFilter === 'pending') {
+            result = result.filter(t => t.status !== 'Done');
+        } else {
+            result = result.filter(t => t.status === 'Done');
+        }
+
         return result;
-    }, [tasks, selectedBlockId]);
+    }, [tasks, selectedBlockId, statusFilter]);
+
+    // Calendar selected day tasks
+    const calendarSelectedTasks = useMemo(() => {
+        if (viewMode !== 'calendar') return [];
+        return filteredTasks.filter(t => {
+            if (statusFilter === 'completed') {
+                return t.completedAt ? isSameDay(new Date(t.completedAt), currentDate) : false;
+            } else {
+                // Pending: check range
+                let start = t.startDate ? new Date(t.startDate) : null;
+                let end = t.dueDate ? new Date(t.dueDate) : null;
+
+                if (!start && !end) return false;
+                if (!start) start = end;
+                if (!end) end = start;
+
+                if (start && end) {
+                    // Reset times for date comparison
+                    const d = new Date(currentDate);
+                    d.setHours(0, 0, 0, 0);
+                    const s = new Date(start);
+                    s.setHours(0, 0, 0, 0);
+                    const e = new Date(end);
+                    e.setHours(0, 0, 0, 0);
+
+                    return d >= s && d <= e;
+                }
+                return false;
+            }
+        });
+    }, [filteredTasks, viewMode, currentDate, statusFilter]);
 
     // Add task modal state
     const [isModalVisible, setModalVisible] = useState(false);
@@ -45,6 +88,9 @@ export default function TasksScreen() {
     const [dueDate, setDueDate] = useState<Date | null>(null);
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [showDueDatePicker, setShowDueDatePicker] = useState(false);
+
+    // View Modal State (for Gantt/Calendar interaction)
+    const [selectedTaskForView, setSelectedTaskForView] = useState<any | null>(null);
 
     const handleAddTask = async () => {
         if (!newTaskTitle) {
@@ -93,13 +139,52 @@ export default function TasksScreen() {
         return date.toLocaleDateString();
     };
 
+    const renderTaskList = (data: any[]) => (
+        <FlatList
+            data={data}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+                <TaskItem
+                    task={item}
+                    toggleTaskComplete={toggleTaskComplete}
+                    onUpdate={(taskId, updates) => updateTask(taskId, {
+                        ...updates,
+                        description: updates.description ?? undefined,
+                        blockId: updates.blockId ?? undefined,
+                        assignedTo: updates.assignedTo ?? undefined,
+                        startDate: updates.startDate ?? undefined,
+                        dueDate: updates.dueDate ?? undefined,
+                    })}
+                    onDelete={deleteTask}
+                    showBlockSelector={true}
+                />
+            )}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80, paddingTop: 16 }}
+            ListEmptyComponent={
+                <View className="items-center justify-center mt-10">
+                    <FontAwesome5 name="tasks" size={32} color="#d1d5db" />
+                    <Text className="text-gray-400 mt-2 text-center">
+                        No tasks found for this view.
+                    </Text>
+                </View>
+            }
+        />
+    );
+
     return (
         <SafeAreaView className="flex-1 bg-gray-50">
+            {/* Page Title */}
+            <View className="px-4 py-3 bg-white border-b border-gray-100">
+                <Text className="text-2xl font-bold text-gray-900">Tasks</Text>
+            </View>
+
             <ScheduleFilters
                 viewMode={viewMode}
                 setViewMode={setViewMode}
                 selectedBlockId={selectedBlockId}
                 setSelectedBlockId={setSelectedBlockId}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
                 blocks={blocks}
             />
 
@@ -109,57 +194,29 @@ export default function TasksScreen() {
                 onDateChange={setCurrentDate}
             />
 
-            {viewMode === 'list' && (
-                <>
-                    <View className="px-4 py-3 flex-row justify-between items-center">
-                        <Text className="text-xl font-bold text-gray-900">Tasks</Text>
-                        <Text className="text-gray-500">{filteredTasks.length} tasks</Text>
-                    </View>
-
-                    <FlatList
-                        data={filteredTasks}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            <TaskItem
-                                task={item}
-                                toggleTaskComplete={toggleTaskComplete}
-                                onUpdate={(taskId, updates) => updateTask(taskId, {
-                                    ...updates,
-                                    description: updates.description ?? undefined,
-                                    blockId: updates.blockId ?? undefined,
-                                    assignedTo: updates.assignedTo ?? undefined,
-                                    startDate: updates.startDate ?? undefined,
-                                    dueDate: updates.dueDate ?? undefined,
-                                })}
-                                onDelete={deleteTask}
-                                showBlockSelector={true}
-                            />
-                        )}
-                        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80 }}
-                        ListEmptyComponent={
-                            <View className="items-center justify-center mt-20">
-                                <FontAwesome5 name="tasks" size={48} color="#d1d5db" />
-                                <Text className="text-gray-400 mt-4 text-center">
-                                    No tasks yet.{'\n'}Create your first task!
-                                </Text>
-                            </View>
-                        }
-                    />
-                </>
-            )}
+            {viewMode === 'list' && renderTaskList(filteredTasks)}
 
             {viewMode === 'calendar' && (
-                <CalendarView
-                    tasks={filteredTasks}
-                    currentDate={currentDate}
-                    onDateChange={setCurrentDate}
-                />
+                <View className="flex-1">
+                    <CalendarView
+                        tasks={filteredTasks}
+                        currentDate={currentDate}
+                        onDateChange={setCurrentDate}
+                    />
+                    <View className="flex-1 bg-gray-50 mt-4">
+                        <Text className="px-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                            {format(currentDate, 'MMMM d, yyyy')}
+                        </Text>
+                        {renderTaskList(calendarSelectedTasks)}
+                    </View>
+                </View>
             )}
 
             {viewMode === 'gantt' && (
                 <GanttView
                     tasks={filteredTasks}
                     currentDate={currentDate}
+                    onTaskPress={(task) => setSelectedTaskForView(task)}
                 />
             )}
 
@@ -268,6 +325,14 @@ export default function TasksScreen() {
                     mode="date"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                     onChange={handleDueDateChange}
+                />
+            )}
+            {/* View Task Modal (for Gantt) */}
+            {selectedTaskForView && (
+                <ViewTaskModal
+                    visible={!!selectedTaskForView}
+                    task={selectedTaskForView}
+                    onClose={() => setSelectedTaskForView(null)}
                 />
             )}
         </SafeAreaView>
