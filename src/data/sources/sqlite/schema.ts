@@ -27,3 +27,22 @@ export const tasks = sqliteTable("tasks", {
   syncedAt: integer("synced_at", { mode: "timestamp" }), // For offline-first sync
   isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false), // Soft delete for sync
 });
+
+export const notes = sqliteTable("notes", {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    type: text("type").notNull(), // 'TEXT' | 'SHOPPING_LIST'
+    content: text("content"),
+    items: text("items"), // JSON string
+    isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+});
+
+export const attachments = sqliteTable("attachments", {
+    id: text("id").primaryKey(),
+    taskId: text("task_id").notNull().references(() => tasks.id),
+    type: text("type").notNull(),
+    uri: text("uri").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});

@@ -90,6 +90,41 @@ const runMigrations = () => {
       
       console.log("Migration 0002 completed.");
     }
+
+    // Check if migration 0003 has been applied (Notes & Attachments)
+    const tablesV3 = expoDb.getAllSync<{ name: string }>(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='notes'"
+    );
+
+    if (tablesV3.length === 0) {
+      console.log("Running migration 0003 (Notes & Attachments)...");
+
+      expoDb.execSync(`
+        CREATE TABLE notes (
+            id text PRIMARY KEY NOT NULL,
+            title text NOT NULL,
+            type text NOT NULL,
+            content text,
+            items text,
+            is_deleted integer DEFAULT 0 NOT NULL,
+            created_at integer NOT NULL,
+            updated_at integer NOT NULL
+        );
+      `);
+
+      expoDb.execSync(`
+        CREATE TABLE attachments (
+            id text PRIMARY KEY NOT NULL,
+            task_id text NOT NULL,
+            type text NOT NULL,
+            uri text NOT NULL,
+            created_at integer NOT NULL,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON UPDATE no action ON DELETE cascade
+        );
+      `);
+
+      console.log("Migration 0003 completed.");
+    }
     
     console.log("All migrations completed successfully.");
   } catch (error) {
