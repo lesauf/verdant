@@ -1,4 +1,4 @@
-import { faCheckCircle, faExpandArrowsAlt, faMap, faPlusCircle, faTasks } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faExpandArrowsAlt, faMap, faTasks } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -36,9 +36,25 @@ export default function DashboardScreen() {
   today.setHours(0, 0, 0, 0);
   const todaysTasks = tasks.filter(task => {
     if (!task.startDate) return false;
-    const taskDate = new Date(task.startDate);
-    taskDate.setHours(0, 0, 0, 0);
-    return taskDate.getTime() === today.getTime();
+
+    // Normalize today to midnight
+    const todayStart = new Date(today);
+
+    // Normalize task start date to midnight
+    const taskStart = new Date(task.startDate);
+    taskStart.setHours(0, 0, 0, 0);
+
+    // Case 1: Starts today and has no end date
+    if (!task.dueDate) {
+      return taskStart.getTime() === todayStart.getTime();
+    }
+
+    // Case 2: Range includes today
+    // Normalize task due date to midnight
+    const taskEnd = new Date(task.dueDate);
+    taskEnd.setHours(0, 0, 0, 0);
+
+    return todayStart.getTime() >= taskStart.getTime() && todayStart.getTime() <= taskEnd.getTime();
   });
 
   return (
@@ -79,64 +95,6 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        {/* Block Status Breakdown */}
-        <View className="bg-white p-5 rounded-xl shadow-sm mb-4">
-          <Text className="text-lg font-bold text-gray-900 mb-4">Block Status</Text>
-
-          <View className="flex-row justify-between items-center mb-3">
-            <View className="flex-row items-center flex-1">
-              <View className="w-3 h-3 rounded-full bg-emerald-500 mr-2" />
-              <Text className="text-gray-700">Planted</Text>
-            </View>
-            <Text className="text-gray-900 font-semibold">{plantedBlocks}</Text>
-          </View>
-
-          <View className="flex-row justify-between items-center mb-3">
-            <View className="flex-row items-center flex-1">
-              <View className="w-3 h-3 rounded-full bg-amber-500 mr-2" />
-              <Text className="text-gray-700">Prep</Text>
-            </View>
-            <Text className="text-gray-900 font-semibold">{prepBlocks}</Text>
-          </View>
-
-          <View className="flex-row justify-between items-center">
-            <View className="flex-row items-center flex-1">
-              <View className="w-3 h-3 rounded-full bg-gray-500 mr-2" />
-              <Text className="text-gray-700">Fallow</Text>
-            </View>
-            <Text className="text-gray-900 font-semibold">{fallowBlocks}</Text>
-          </View>
-        </View>
-
-        {/* Task Progress */}
-        <View className="bg-white p-5 rounded-xl shadow-sm mb-4">
-          <Text className="text-lg font-bold text-gray-900 mb-4">Task Progress</Text>
-
-          <View className="flex-row justify-between items-center mb-3">
-            <View className="flex-row items-center flex-1">
-              <View className="w-3 h-3 rounded-full bg-red-500 mr-2" />
-              <Text className="text-gray-700">To Do</Text>
-            </View>
-            <Text className="text-gray-900 font-semibold">{todoTasks}</Text>
-          </View>
-
-          <View className="flex-row justify-between items-center mb-3">
-            <View className="flex-row items-center flex-1">
-              <View className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
-              <Text className="text-gray-700">In Progress</Text>
-            </View>
-            <Text className="text-gray-900 font-semibold">{inProgressTasks}</Text>
-          </View>
-
-          <View className="flex-row justify-between items-center">
-            <View className="flex-row items-center flex-1">
-              <View className="w-3 h-3 rounded-full bg-emerald-500 mr-2" />
-              <Text className="text-gray-700">Done</Text>
-            </View>
-            <Text className="text-gray-900 font-semibold">{completedTasks}</Text>
-          </View>
-        </View>
-
         {/* Today's Tasks */}
         <View className="bg-white p-5 rounded-xl shadow-sm mb-4">
           <Text className="text-lg font-bold text-gray-900 mb-4">Priority Tasks (Today)</Text>
@@ -163,27 +121,6 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             ))
           )}
-        </View>
-
-        {/* Quick Actions */}
-        <View className="bg-white p-5 rounded-xl shadow-sm mb-20">
-          <Text className="text-lg font-bold text-gray-900 mb-4">Quick Actions</Text>
-
-          <TouchableOpacity
-            className="bg-emerald-500 p-4 rounded-lg mb-3 flex-row items-center"
-            onPress={() => router.push('/blocks')}
-          >
-            <FontAwesomeIcon icon={faPlusCircle} size={20} color="white" />
-            <Text className="text-white font-bold ml-3">Add New Block</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="bg-blue-500 p-4 rounded-lg flex-row items-center"
-            onPress={() => router.push('/tasks')}
-          >
-            <FontAwesomeIcon icon={faPlusCircle} size={20} color="white" />
-            <Text className="text-white font-bold ml-3">Create New Task</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
