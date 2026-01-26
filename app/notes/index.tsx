@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faArrowLeft, faChevronRight, faClipboard, faPlus, faShoppingBasket, faStickyNote } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
@@ -21,8 +22,8 @@ export default function NotesListScreen() {
             onPress={() => router.push(`/notes/${item.id}`)}
         >
             <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${item.type === 'SHOPPING_LIST' ? 'bg-yellow-100' : 'bg-blue-100'}`}>
-                <FontAwesome5
-                    name={item.type === 'SHOPPING_LIST' ? 'shopping-basket' : 'sticky-note'}
+                <FontAwesomeIcon
+                    icon={item.type === 'SHOPPING_LIST' ? faShoppingBasket : faStickyNote}
                     size={18}
                     color={item.type === 'SHOPPING_LIST' ? '#d97706' : '#2563eb'}
                 />
@@ -35,7 +36,7 @@ export default function NotesListScreen() {
                         : item.content.substring(0, 50).replace(/\n/g, ' ')}
                 </Text>
             </View>
-            <FontAwesome5 name="chevron-right" size={14} color="#d1d5db" />
+            <FontAwesomeIcon icon={faChevronRight} size={14} color="#d1d5db" />
         </TouchableOpacity>
     );
 
@@ -48,7 +49,7 @@ export default function NotesListScreen() {
         <SafeAreaView className="flex-1 bg-gray-50">
             <View className="px-4 py-3 bg-white border-b border-gray-100 flex-row justify-between items-center">
                 <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-                    <FontAwesome5 name="arrow-left" size={20} color="#374151" />
+                    <FontAwesomeIcon icon={faArrowLeft} size={20} color="#374151" />
                 </TouchableOpacity>
                 <Text className="text-xl font-bold text-gray-900">Notes & Lists</Text>
                 <View className="w-8" />
@@ -61,7 +62,7 @@ export default function NotesListScreen() {
                 contentContainerStyle={{ padding: 16 }}
                 ListEmptyComponent={
                     <View className="items-center justify-center mt-20">
-                        <FontAwesome5 name="clipboard" size={48} color="#e5e7eb" />
+                        <FontAwesomeIcon icon={faClipboard} size={48} color="#e5e7eb" />
                         <Text className="text-gray-400 mt-4 text-center">No notes yet.{'\n'}Create your first list or note!</Text>
                     </View>
                 }
@@ -71,7 +72,7 @@ export default function NotesListScreen() {
                 className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
                 onPress={handleCreate}
             >
-                <FontAwesome5 name="plus" size={24} color="white" />
+                <FontAwesomeIcon icon={faPlus} size={24} color="white" />
             </TouchableOpacity>
         </SafeAreaView>
     );

@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faCalendar, faCheck, faEdit, faMapMarkerAlt, faPlayCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { Task } from "../../src/domain/entities/Task";
@@ -65,7 +66,7 @@ export default function TaskItem({
                         <View className={`w-6 h-6 rounded-full items-center justify-center ${task.status === 'Done' ? 'bg-emerald-500' : 'border-2 border-gray-300'
                             }`}>
                             {task.status === 'Done' && (
-                                <FontAwesome5 name="check" size={12} color="white" />
+                                <FontAwesomeIcon icon={faCheck} size={12} color="white" />
                             )}
                         </View>
                     </TouchableOpacity>
@@ -81,19 +82,19 @@ export default function TaskItem({
                         <View className="flex-row items-center mt-1 flex-wrap gap-2">
                             {blockName && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="map-marker-alt" size={10} color="#6b7280" />
+                                    <FontAwesomeIcon icon={faMapMarkerAlt} size={10} color="#6b7280" />
                                     <Text className="text-gray-500 text-xs ml-1">{blockName}</Text>
                                 </View>
                             )}
                             {task.startDate && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="play-circle" size={10} color="#6b7280" />
+                                    <FontAwesomeIcon icon={faPlayCircle} size={10} color="#6b7280" />
                                     <Text className="text-gray-500 text-xs ml-1">{formatDate(task.startDate)}</Text>
                                 </View>
                             )}
                             {task.dueDate && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="calendar" size={10} color={isOverdue ? "#ef4444" : "#6b7280"} />
+                                    <FontAwesomeIcon icon={faCalendar} size={10} color={isOverdue ? "#ef4444" : "#6b7280"} />
                                     <Text className={`text-xs ml-1 ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
                                         {formatDate(task.dueDate)}
                                     </Text>
@@ -108,13 +109,13 @@ export default function TaskItem({
                                 onPress={handleEdit}
                                 className="p-2"
                             >
-                                <FontAwesome5 name="edit" size={16} color="#6b7280" />
+                                <FontAwesomeIcon icon={faEdit} size={16} color="#6b7280" />
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={handleDelete}
                                 className="p-2"
                             >
-                                <FontAwesome5 name="trash" size={16} color="#ef4444" />
+                                <FontAwesomeIcon icon={faTrash} size={16} color="#ef4444" />
                             </TouchableOpacity>
                         </View>
                     )}

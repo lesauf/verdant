@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faCalendar, faCamera, faCheckCircle, faMapMarkerAlt, faPlayCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect } from "react";
 import { Alert, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -85,7 +86,7 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                             </View>
                         </View>
                         <TouchableOpacity onPress={onClose}>
-                            <FontAwesome5 name="times" size={20} color="#9ca3af" />
+                            <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
                         </TouchableOpacity>
                     </View>
 
@@ -100,19 +101,19 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                         <View className="space-y-3 mb-6">
                             {blockName && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="map-marker-alt" size={14} color="#6b7280" />
+                                    <FontAwesomeIcon icon={faMapMarkerAlt} size={14} color="#6b7280" />
                                     <Text className="text-gray-600 ml-2">{blockName}</Text>
                                 </View>
                             )}
                             {task.startDate && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="play-circle" size={14} color="#6b7280" />
+                                    <FontAwesomeIcon icon={faPlayCircle} size={14} color="#6b7280" />
                                     <Text className="text-gray-600 ml-2">Start: {formatDate(task.startDate)}</Text>
                                 </View>
                             )}
                             {task.dueDate && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="calendar" size={14} color={isOverdue ? "#ef4444" : "#6b7280"} />
+                                    <FontAwesomeIcon icon={faCalendar} size={14} color={isOverdue ? "#ef4444" : "#6b7280"} />
                                     <Text className={`ml-2 ${isOverdue ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>
                                         Due: {formatDate(task.dueDate)}
                                     </Text>
@@ -120,7 +121,7 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                             )}
                             {task.completedAt && (
                                 <View className="flex-row items-center">
-                                    <FontAwesome5 name="check-circle" size={14} color="#10b981" />
+                                    <FontAwesomeIcon icon={faCheckCircle} size={14} color="#10b981" />
                                     <Text className="text-gray-600 ml-2">
                                         Completed: {formatDate(task.completedAt)}
                                     </Text>
@@ -151,7 +152,7 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                                         ]);
                                     }}
                                 >
-                                    <FontAwesome5 name="camera" size={20} color="#9ca3af" />
+                                    <FontAwesomeIcon icon={faCamera} size={20} color="#9ca3af" />
                                     <Text className="text-xs text-gray-400 mt-1">Add</Text>
                                 </TouchableOpacity>
                             </ScrollView>

@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from "react";
 import { Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Block } from "../../src/domain/entities/Block";
@@ -39,7 +40,7 @@ export default function EditBlockModal({ visible, block, onClose, onSave }: Edit
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className="text-xl font-bold text-gray-900">Edit Block</Text>
                         <TouchableOpacity onPress={onClose}>
-                            <FontAwesome5 name="times" size={20} color="#9ca3af" />
+                            <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
                         </TouchableOpacity>
                     </View>
 

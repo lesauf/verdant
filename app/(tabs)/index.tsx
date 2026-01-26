@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faCheckCircle, faExpandArrowsAlt, faMap, faPlusCircle, faTasks } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -54,12 +55,12 @@ export default function DashboardScreen() {
         {/* Stats Cards */}
         <View className="flex-row justify-between mb-4">
           <View className="bg-emerald-500 p-4 rounded-xl flex-1 mr-2">
-            <FontAwesome5 name="map" size={24} color="white" />
+            <FontAwesomeIcon icon={faMap} size={24} color="white" />
             <Text className="text-white text-2xl font-bold mt-2">{totalBlocks}</Text>
             <Text className="text-white opacity-90">Total Blocks</Text>
           </View>
           <View className="bg-blue-500 p-4 rounded-xl flex-1 ml-2">
-            <FontAwesome5 name="expand-arrows-alt" size={24} color="white" />
+            <FontAwesomeIcon icon={faExpandArrowsAlt} size={24} color="white" />
             <Text className="text-white text-2xl font-bold mt-2">{totalArea.toFixed(1)}</Text>
             <Text className="text-white opacity-90">Total Ha</Text>
           </View>
@@ -67,12 +68,12 @@ export default function DashboardScreen() {
 
         <View className="flex-row justify-between mb-6">
           <View className="bg-purple-500 p-4 rounded-xl flex-1 mr-2">
-            <FontAwesome5 name="tasks" size={24} color="white" />
+            <FontAwesomeIcon icon={faTasks} size={24} color="white" />
             <Text className="text-white text-2xl font-bold mt-2">{totalTasks}</Text>
             <Text className="text-white opacity-90">Total Tasks</Text>
           </View>
           <View className="bg-orange-500 p-4 rounded-xl flex-1 ml-2">
-            <FontAwesome5 name="check-circle" size={24} color="white" />
+            <FontAwesomeIcon icon={faCheckCircle} size={24} color="white" />
             <Text className="text-white text-2xl font-bold mt-2">{completedTasks}</Text>
             <Text className="text-white opacity-90">Completed</Text>
           </View>
@@ -153,10 +154,10 @@ export default function DashboardScreen() {
                   <Text className="text-gray-600 text-sm">{task.description}</Text>
                 )}
                 <View className={`mt-2 self-start px-3 py-1 rounded-full ${task.status === 'Done' ? 'bg-emerald-100' :
-                    task.status === 'In Progress' ? 'bg-blue-100' : 'bg-red-100'
+                  task.status === 'In Progress' ? 'bg-blue-100' : 'bg-red-100'
                   }`}>
                   <Text className={`text-xs font-semibold ${task.status === 'Done' ? 'text-emerald-700' :
-                      task.status === 'In Progress' ? 'text-blue-700' : 'text-red-700'
+                    task.status === 'In Progress' ? 'text-blue-700' : 'text-red-700'
                     }`}>{task.status}</Text>
                 </View>
               </TouchableOpacity>
@@ -172,7 +173,7 @@ export default function DashboardScreen() {
             className="bg-emerald-500 p-4 rounded-lg mb-3 flex-row items-center"
             onPress={() => router.push('/blocks')}
           >
-            <FontAwesome5 name="plus-circle" size={20} color="white" />
+            <FontAwesomeIcon icon={faPlusCircle} size={20} color="white" />
             <Text className="text-white font-bold ml-3">Add New Block</Text>
           </TouchableOpacity>
 
@@ -180,7 +181,7 @@ export default function DashboardScreen() {
             className="bg-blue-500 p-4 rounded-lg flex-row items-center"
             onPress={() => router.push('/tasks')}
           >
-            <FontAwesome5 name="plus-circle" size={20} color="white" />
+            <FontAwesomeIcon icon={faPlusCircle} size={20} color="white" />
             <Text className="text-white font-bold ml-3">Create New Task</Text>
           </TouchableOpacity>
         </View>

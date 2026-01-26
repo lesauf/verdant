@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faCalendarAlt, faList, faStream } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Block } from "../../src/domain/entities/Block";
@@ -30,19 +31,19 @@ export default function ScheduleFilters({
                     style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
                     onPress={() => setViewMode('list')}
                 >
-                    <FontAwesome5 name="list" size={14} color={viewMode === 'list' ? "#10b981" : "#6b7280"} />
+                    <FontAwesomeIcon icon={faList} size={14} color={viewMode === 'list' ? "#10b981" : "#6b7280"} />
                 </Pressable>
                 <Pressable
                     style={[styles.toggleButton, viewMode === 'calendar' && styles.toggleButtonActive]}
                     onPress={() => setViewMode('calendar')}
                 >
-                    <FontAwesome5 name="calendar-alt" size={14} color={viewMode === 'calendar' ? "#10b981" : "#6b7280"} />
+                    <FontAwesomeIcon icon={faCalendarAlt} size={14} color={viewMode === 'calendar' ? "#10b981" : "#6b7280"} />
                 </Pressable>
                 <Pressable
                     style={[styles.toggleButton, viewMode === 'gantt' && styles.toggleButtonActive]}
                     onPress={() => setViewMode('gantt')}
                 >
-                    <FontAwesome5 name="stream" size={14} color={viewMode === 'gantt' ? "#10b981" : "#6b7280"} />
+                    <FontAwesomeIcon icon={faStream} size={14} color={viewMode === 'gantt' ? "#10b981" : "#6b7280"} />
                 </Pressable>
             </View>
 

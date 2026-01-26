@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faPlus, faTasks, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, isSameDay } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
@@ -163,7 +164,7 @@ export default function TasksScreen() {
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80, paddingTop: 16 }}
             ListEmptyComponent={
                 <View className="items-center justify-center mt-10">
-                    <FontAwesome5 name="tasks" size={32} color="#d1d5db" />
+                    <FontAwesomeIcon icon={faTasks} size={32} color="#d1d5db" />
                     <Text className="text-gray-400 mt-2 text-center">
                         No tasks found for this view.
                     </Text>
@@ -224,7 +225,7 @@ export default function TasksScreen() {
                 className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
                 onPress={() => setModalVisible(true)}
             >
-                <FontAwesome5 name="plus" size={24} color="white" />
+                <FontAwesomeIcon icon={faPlus} size={24} color="white" />
             </TouchableOpacity>
 
             {/* Add Task Modal */}
@@ -239,7 +240,7 @@ export default function TasksScreen() {
                         <View className="flex-row justify-between items-center mb-6">
                             <Text className="text-xl font-bold text-gray-900">New Task</Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <FontAwesome5 name="times" size={20} color="#9ca3af" />
+                                <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
                             </TouchableOpacity>
                         </View>
 

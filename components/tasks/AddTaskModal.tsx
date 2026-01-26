@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faCalendar, faPlayCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React from "react";
 import { Alert, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -69,7 +70,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className="text-xl font-bold text-gray-900">New Task for {blockName}</Text>
                         <TouchableOpacity onPress={onClose}>
-                            <FontAwesome5 name="times" size={20} color="#9ca3af" />
+                            <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
                         </TouchableOpacity>
                     </View>
 
@@ -101,7 +102,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                             <Text className={startDate ? "text-gray-900" : "text-gray-400"}>
                                 {formatDate(startDate)}
                             </Text>
-                            <FontAwesome5 name="play-circle" size={16} color="#6b7280" />
+                            <FontAwesomeIcon icon={faPlayCircle} size={16} color="#6b7280" />
                         </TouchableOpacity>
 
                         {showStartDatePicker && (
@@ -124,7 +125,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                             <Text className={dueDate ? "text-gray-900" : "text-gray-400"}>
                                 {formatDate(dueDate)}
                             </Text>
-                            <FontAwesome5 name="calendar" size={16} color="#6b7280" />
+                            <FontAwesomeIcon icon={faCalendar} size={16} color="#6b7280" />
                         </TouchableOpacity>
 
                         {showDueDatePicker && (

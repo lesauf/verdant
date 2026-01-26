@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { addDays, addMonths, format, subDays, subMonths } from "date-fns";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -44,7 +45,7 @@ export default function DateNavigation({ currentDate, onDateChange, viewMode }: 
     return (
         <View className="flex-row items-center justify-between bg-white px-4 py-3 border-b border-gray-100">
             <TouchableOpacity onPress={handlePrev} className="p-2">
-                <FontAwesome5 name="chevron-left" size={16} color="#374151" />
+                <FontAwesomeIcon icon={faChevronLeft} size={16} color="#374151" />
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleToday}>
@@ -52,7 +53,7 @@ export default function DateNavigation({ currentDate, onDateChange, viewMode }: 
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleNext} className="p-2">
-                <FontAwesome5 name="chevron-right" size={16} color="#374151" />
+                <FontAwesomeIcon icon={faChevronRight} size={16} color="#374151" />
             </TouchableOpacity>
         </View>
     );

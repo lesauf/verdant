@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faMap, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, FlatList, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -76,7 +77,7 @@ export default function BlocksScreen() {
                 contentContainerStyle={{ paddingBottom: 80 }}
                 ListEmptyComponent={
                     <View className="items-center justify-center mt-20">
-                        <FontAwesome5 name="map" size={48} color="#d1d5db" />
+                        <FontAwesomeIcon icon={faMap} size={48} color="#d1d5db" />
                         <Text className="text-gray-400 mt-4 text-center">No blocks yet.{'\n'}Add your first block!</Text>
                     </View>
                 }
@@ -86,7 +87,7 @@ export default function BlocksScreen() {
                 className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
                 onPress={() => setModalVisible(true)}
             >
-                <FontAwesome5 name="plus" size={24} color="white" />
+                <FontAwesomeIcon icon={faPlus} size={24} color="white" />
             </TouchableOpacity>
 
             {/* Add Block Modal */}
@@ -101,7 +102,7 @@ export default function BlocksScreen() {
                         <View className="flex-row justify-between items-center mb-6">
                             <Text className="text-xl font-bold text-gray-900">New Block</Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <FontAwesome5 name="times" size={20} color="#9ca3af" />
+                                <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
                             </TouchableOpacity>
                         </View>
 

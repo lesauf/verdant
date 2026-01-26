@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faArrowLeft, faCheck, faPlus, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -112,7 +113,7 @@ export default function NoteDetailScreen() {
         <SafeAreaView className="flex-1 bg-gray-50">
             <View className="px-4 py-3 bg-white border-b border-gray-100 flex-row justify-between items-center">
                 <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-                    <FontAwesome5 name="arrow-left" size={20} color="#374151" />
+                    <FontAwesomeIcon icon={faArrowLeft} size={20} color="#374151" />
                 </TouchableOpacity>
                 <TextInput
                     className="flex-1 font-bold text-xl mx-2"
@@ -158,7 +159,7 @@ export default function NoteDetailScreen() {
                             <View key={item.id} className="flex-row items-center mb-3 bg-white p-2 rounded-lg shadow-sm">
                                 <TouchableOpacity onPress={() => toggleItem(item.id)} className="mr-3">
                                     <View className={`w-6 h-6 rounded border-2 items-center justify-center ${item.checked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'}`}>
-                                        {item.checked && <FontAwesome5 name="check" size={12} color="white" />}
+                                        {item.checked && <FontAwesomeIcon icon={faCheck} size={12} color="white" />}
                                     </View>
                                 </TouchableOpacity>
 
@@ -184,7 +185,7 @@ export default function NoteDetailScreen() {
                                 </View>
 
                                 <TouchableOpacity onPress={() => removeItem(item.id)}>
-                                    <FontAwesome5 name="times" size={16} color="#ef4444" />
+                                    <FontAwesomeIcon icon={faTimes} size={16} color="#ef4444" />
                                 </TouchableOpacity>
                             </View>
                         ))}
@@ -193,7 +194,7 @@ export default function NoteDetailScreen() {
                             className="flex-row items-center justify-center py-3 border-2 border-dashed border-gray-300 rounded-lg mt-2"
                             onPress={addItem}
                         >
-                            <FontAwesome5 name="plus" size={14} color="#6b7280" />
+                            <FontAwesomeIcon icon={faPlus} size={14} color="#6b7280" />
                             <Text className="text-gray-500 font-semibold ml-2">Add Item</Text>
                         </TouchableOpacity>
 
@@ -224,7 +225,7 @@ export default function NoteDetailScreen() {
                         className="flex-row justify-center items-center py-3"
                         onPress={handleDelete}
                     >
-                        <FontAwesome5 name="trash" size={16} color="#ef4444" />
+                        <FontAwesomeIcon icon={faTrash} size={16} color="#ef4444" />
                         <Text className="text-red-500 font-bold ml-2">Delete Note</Text>
                     </TouchableOpacity>
                 </View>

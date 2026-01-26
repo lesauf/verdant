@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faBars, faHome, faTasks, faThLarge } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
 import "../../global.css";
@@ -24,28 +25,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Dashboard",
-          tabBarIcon: ({ color }) => <FontAwesome5 name="home" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesomeIcon icon={faHome} size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="blocks/index"
         options={{
           title: "Blocks",
-          tabBarIcon: ({ color }) => <FontAwesome5 name="th-large" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesomeIcon icon={faThLarge} size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="tasks/index"
         options={{
           title: "Tasks",
-          tabBarIcon: ({ color }) => <FontAwesome5 name="tasks" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesomeIcon icon={faTasks} size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="menu/index"
         options={{
           title: "Menu",
-          tabBarIcon: ({ color }) => <FontAwesome5 name="bars" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <FontAwesomeIcon icon={faBars} size={24} color={color} />,
         }}
       />
       <Tabs.Screen

@@ -1,4 +1,5 @@
-import { FontAwesome5 } from "@expo/vector-icons";
+import { faEdit, faTasks, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo } from "react";
 import { Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -84,13 +85,13 @@ export default function BlockDetailsScreen() {
                                 className="bg-gray-100 p-3 rounded-full"
                                 onPress={() => setEditBlockModalVisible(true)}
                             >
-                                <FontAwesome5 name="edit" size={18} color="#374151" />
+                                <FontAwesomeIcon icon={faEdit} size={18} color="#374151" />
                             </TouchableOpacity>
                             <TouchableOpacity
                                 className="bg-red-50 p-3 rounded-full"
                                 onPress={handleDeleteBlock}
                             >
-                                <FontAwesome5 name="trash" size={18} color="#ef4444" />
+                                <FontAwesomeIcon icon={faTrash} size={18} color="#ef4444" />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -132,7 +133,7 @@ export default function BlockDetailsScreen() {
                         scrollEnabled={false}
                         ListEmptyComponent={
                             <View className="items-center justify-center py-12">
-                                <FontAwesome5 name="tasks" size={48} color="#d1d5db" />
+                                <FontAwesomeIcon icon={faTasks} size={48} color="#d1d5db" />
                                 <Text className="text-gray-400 mt-4 text-center">
                                     No tasks yet.{'\n'}Add your first task!
                                 </Text>
