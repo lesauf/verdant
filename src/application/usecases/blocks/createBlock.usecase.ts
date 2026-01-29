@@ -3,7 +3,7 @@ import { AppError } from '../../../infrastructure/errors/AppError';
 import { IdService } from '../../services/id.service';
 import { ValidationService } from '../../services/validation.service';
 
-import { BlockRepository } from '../../../data/repositories/BlockRepository';
+import { BlockRepository } from '../../../data/repositories/firebase/BlockRepository';
 
 export interface CreateBlockInput {
   name: string;

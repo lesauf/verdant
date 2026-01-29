@@ -1,7 +1,7 @@
 import { Block } from '../../../domain/entities/Block';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-import { BlockRepository } from '../../../data/repositories/BlockRepository';
+import { BlockRepository } from '../../../data/repositories/firebase/BlockRepository';
 
 export class GetBlockByIdUseCase {
   constructor(private blockRepository: BlockRepository) {}

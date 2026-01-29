@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "77155287508",
+    "project_id": "verdant-e6185",
+    "storage_bucket": "verdant-e6185.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77155287508:android:87933f7c706fd87c3b9641",
+        "android_client_info": {
+          "package_name": "com.lesauf.verdant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBa0POD4ogrG6HeBb-0Di573h_d-OA-Mkc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

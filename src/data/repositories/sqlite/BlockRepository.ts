@@ -1,8 +1,8 @@
 import { and, eq, isNull } from 'drizzle-orm';
-import { Block } from '../../domain/entities/Block';
-import { blockMapper } from '../mappers/blockMapper';
-import { db } from '../sources/sqlite/client';
-import { blocks } from '../sources/sqlite/schema';
+import { Block } from '../../../domain/entities/Block';
+import { blockMapper } from '../../mappers/sqlite/blockMapper';
+import { db } from '../../sources/sqlite/client';
+import { blocks } from '../../sources/sqlite/schema';
 
 /**
  * BlockRepository - Data access for Block entities

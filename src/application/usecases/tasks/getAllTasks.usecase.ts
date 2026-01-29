@@ -1,12 +1,10 @@
 import { Task } from '../../../domain/entities/Task';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-interface ITaskRepository {
-  findAll(): Promise<Task[]>;
-}
+import { TaskRepository } from '../../../data/repositories/firebase/TaskRepository';
 
 export class GetAllTasksUseCase {
-  constructor(private taskRepository: ITaskRepository) {}
+  constructor(private taskRepository: TaskRepository) {}
 
   async execute(): Promise<Task[]> {
     try {

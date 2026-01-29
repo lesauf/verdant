@@ -1,4 +1,4 @@
-import { Block } from '../../domain/entities/Block';
+import { Block } from '../../../domain/entities/Block';
 
 /**
  * Database model for Block (from SQLite)

@@ -3,9 +3,7 @@ import { AppError } from '../../../infrastructure/errors/AppError';
 import { IdService } from '../../services/id.service';
 import { ValidationService } from '../../services/validation.service';
 
-interface ITaskRepository {
-  save(task: Task): Promise<Task>;
-}
+import { TaskRepository } from '../../../data/repositories/firebase/TaskRepository';
 
 export interface CreateTaskInput {
   title: string;
@@ -19,7 +17,7 @@ export interface CreateTaskInput {
 
 export class CreateTaskUseCase {
   constructor(
-    private taskRepository: ITaskRepository,
+    private taskRepository: TaskRepository,
     private idService: IdService,
     private validationService: ValidationService
   ) {}

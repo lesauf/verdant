@@ -1,4 +1,4 @@
-import { Task } from '../../domain/entities/Task';
+import { Task } from '../../../domain/entities/Task';
 
 /**
  * Database model for Task (from SQLite)

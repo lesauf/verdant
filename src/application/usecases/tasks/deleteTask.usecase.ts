@@ -1,13 +1,9 @@
-import { Task } from '../../../domain/entities/Task';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-interface ITaskRepository {
-  findById(id: string): Promise<Task | null>;
-  delete(id: string): Promise<void>;
-}
+import { TaskRepository } from '../../../data/repositories/firebase/TaskRepository';
 
 export class DeleteTaskUseCase {
-  constructor(private taskRepository: ITaskRepository) {}
+  constructor(private taskRepository: TaskRepository) {}
 
   async execute(id: string): Promise<void> {
     try {

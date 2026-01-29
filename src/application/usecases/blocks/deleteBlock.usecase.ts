@@ -1,6 +1,6 @@
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-import { BlockRepository } from '../../../data/repositories/BlockRepository';
+import { BlockRepository } from '../../../data/repositories/firebase/BlockRepository';
 
 export class DeleteBlockUseCase {
   constructor(private blockRepository: BlockRepository) {}

@@ -1,13 +1,10 @@
 import { Task } from '../../../domain/entities/Task';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
-interface ITaskRepository {
-  findById(id: string): Promise<Task | null>;
-  update(task: Task): Promise<Task>;
-}
+import { TaskRepository } from '../../../data/repositories/firebase/TaskRepository';
 
 export class ToggleTaskCompleteUseCase {
-  constructor(private taskRepository: ITaskRepository) {}
+  constructor(private taskRepository: TaskRepository) {}
 
   async execute(id: string): Promise<Task> {
     try {

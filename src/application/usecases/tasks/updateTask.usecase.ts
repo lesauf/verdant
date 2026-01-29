@@ -2,10 +2,7 @@ import { Task, TaskStatus } from '../../../domain/entities/Task';
 import { AppError } from '../../../infrastructure/errors/AppError';
 import { ValidationService } from '../../services/validation.service';
 
-interface ITaskRepository {
-  findById(id: string): Promise<Task | null>;
-  update(task: Task): Promise<Task>;
-}
+import { TaskRepository } from '../../../data/repositories/firebase/TaskRepository';
 
 export interface UpdateTaskInput {
   title?: string;
@@ -19,7 +16,7 @@ export interface UpdateTaskInput {
 
 export class UpdateTaskUseCase {
   constructor(
-    private taskRepository: ITaskRepository,
+    private taskRepository: TaskRepository,
     private validationService: ValidationService
   ) {}
 

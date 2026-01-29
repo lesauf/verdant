@@ -2,7 +2,7 @@ import { Block, BlockStatus } from '../../../domain/entities/Block';
 import { AppError } from '../../../infrastructure/errors/AppError';
 import { ValidationService } from '../../services/validation.service';
 
-import { BlockRepository } from '../../../data/repositories/BlockRepository';
+import { BlockRepository } from '../../../data/repositories/firebase/BlockRepository';
 
 export interface UpdateBlockInput {
   name?: string;

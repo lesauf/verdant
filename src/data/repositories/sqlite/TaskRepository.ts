@@ -1,8 +1,8 @@
 import { and, eq } from 'drizzle-orm';
-import { Task } from '../../domain/entities/Task';
-import { taskMapper } from '../mappers/taskMapper';
-import { db } from '../sources/sqlite/client';
-import { tasks } from '../sources/sqlite/schema';
+import { Task } from '../../../domain/entities/Task';
+import { taskMapper } from '../../mappers/sqlite/taskMapper';
+import { db } from '../../sources/sqlite/client';
+import { tasks } from '../../sources/sqlite/schema';
 
 /**
  * TaskRepository - Data access for Task entities
