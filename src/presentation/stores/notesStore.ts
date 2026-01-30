@@ -1,9 +1,6 @@
-import { desc, eq } from "drizzle-orm";
-import * as Crypto from 'expo-crypto';
 import { create } from "zustand";
-import { db } from "../../data/sources/sqlite/client";
-import { notes } from "../../data/sources/sqlite/schema";
 import { Note, NoteType } from "../../domain/entities/Note";
+import { getContainer } from "../../infrastructure/di/container";
 
 interface NotesState {
     notes: Note[];
@@ -23,21 +20,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     loadNotes: async () => {
         set({ isLoading: true, error: null });
         try {
-            const result = await db.select().from(notes)
-                .where(eq(notes.isDeleted, false))
-                .orderBy(desc(notes.updatedAt));
-
-            const entities = result.map(r => new Note({
-                id: r.id,
-                title: r.title,
-                type: r.type as NoteType,
-                content: r.content || "",
-                items: r.items ? JSON.parse(r.items) : [],
-                createdAt: r.createdAt,
-                updatedAt: r.updatedAt,
-                isDeleted: r.isDeleted
-            }));
-
+            const container = getContainer();
+            const getAllNotesUseCase = container.resolve('getAllNotesUseCase');
+            const entities = await getAllNotesUseCase.execute();
             set({ notes: entities, isLoading: false });
         } catch (error) {
             console.error("Failed to load notes:", error);
@@ -46,21 +31,10 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     },
 
     addNote: async (title: string, type: NoteType) => {
-        const id = Crypto.randomUUID();
-        const now = new Date();
-        const newNote = {
-            id,
-            title,
-            type,
-            content: "",
-            items: JSON.stringify([]),
-            isDeleted: false,
-            createdAt: now,
-            updatedAt: now
-        };
-
         try {
-            await db.insert(notes).values(newNote);
+            const container = getContainer();
+            const createNoteUseCase = container.resolve('createNoteUseCase');
+            const id = await createNoteUseCase.execute({ title, type });
             await get().loadNotes();
             return id;
         } catch (error) {
@@ -72,15 +46,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
     updateNote: async (id: string, updates: Partial<Note>) => {
         try {
-            const updateData: any = { updatedAt: new Date() };
-            if (updates.title !== undefined) updateData.title = updates.title;
-            if (updates.content !== undefined) updateData.content = updates.content;
-            if (updates.items !== undefined) updateData.items = JSON.stringify(updates.items);
-
-            await db.update(notes)
-                .set(updateData)
-                .where(eq(notes.id, id));
-            
+            const container = getContainer();
+            const updateNoteUseCase = container.resolve('updateNoteUseCase');
+            await updateNoteUseCase.execute(id, updates);
             await get().loadNotes();
         } catch (error) {
             console.error("Failed to update note:", error);
@@ -90,9 +58,9 @@ export const useNotesStore = create<NotesState>((set, get) => ({
 
     deleteNote: async (id: string) => {
         try {
-            await db.update(notes)
-                .set({ isDeleted: true, updatedAt: new Date() })
-                .where(eq(notes.id, id));
+            const container = getContainer();
+            const deleteNoteUseCase = container.resolve('deleteNoteUseCase');
+            await deleteNoteUseCase.execute(id);
             await get().loadNotes();
         } catch (error) {
             console.error("Failed to delete note:", error);

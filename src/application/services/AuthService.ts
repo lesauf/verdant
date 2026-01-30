@@ -1,4 +1,4 @@
-import { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { FirebaseAuthTypes, createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from '@react-native-firebase/auth';
 import { firebaseAuth } from '../../infrastructure/config/firebase';
 import { AppError } from '../../infrastructure/errors/AppError';
 
@@ -18,7 +18,7 @@ export class AuthService {
    */
   async signUp(email: string, pass: string): Promise<FirebaseAuthTypes.UserCredential> {
     try {
-      return await firebaseAuth.createUserWithEmailAndPassword(email, pass);
+      return await createUserWithEmailAndPassword(firebaseAuth, email, pass);
     } catch (error) {
       throw new AppError(
         `Sign up failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -34,7 +34,7 @@ export class AuthService {
    */
   async signIn(email: string, pass: string): Promise<FirebaseAuthTypes.UserCredential> {
     try {
-      return await firebaseAuth.signInWithEmailAndPassword(email, pass);
+      return await signInWithEmailAndPassword(firebaseAuth, email, pass);
     } catch (error) {
       throw new AppError(
         `Sign in failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -50,7 +50,7 @@ export class AuthService {
    */
   async signOut(): Promise<void> {
     try {
-      await firebaseAuth.signOut();
+      await signOut(firebaseAuth);
     } catch (error) {
       throw new AppError(
         `Sign out failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -65,6 +65,6 @@ export class AuthService {
    * Listen for auth state changes
    */
   onAuthStateChanged(callback: (user: FirebaseAuthTypes.User | null) => void) {
-    return firebaseAuth.onAuthStateChanged(callback);
+    return onAuthStateChanged(firebaseAuth, callback);
   }
 }

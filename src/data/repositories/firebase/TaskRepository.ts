@@ -1,3 +1,4 @@
+import { collection, doc, getDoc, getDocs, query, setDoc, Timestamp, updateDoc, where } from '@react-native-firebase/firestore';
 import { Task } from '../../../domain/entities/Task';
 import { firebaseDb } from '../../../infrastructure/config/firebase';
 import { AppError } from '../../../infrastructure/errors/AppError';
@@ -7,18 +8,20 @@ import { TaskFirestoreModel, taskMapper } from '../../mappers/firebase/taskMappe
  * TaskRepository - Data access for Task entities using Firestore
  */
 export class TaskRepository {
-  private collection = firebaseDb.collection('tasks');
+  private collectionName = 'tasks';
 
   /**
    * Find all non-deleted tasks
    */
   async findAll(): Promise<Task[]> {
     try {
-      const snapshot = await this.collection
-        .where('isDeleted', '==', false)
-        .get();
+      const q = query(
+        collection(firebaseDb, this.collectionName),
+        where('isDeleted', '==', false)
+      );
+      const snapshot = await getDocs(q);
       
-      return snapshot.docs.map(doc => 
+      return snapshot.docs.map((doc: any) => 
         taskMapper.toDomain({ id: doc.id, ...doc.data() } as TaskFirestoreModel)
       );
     } catch (error) {
@@ -36,10 +39,12 @@ export class TaskRepository {
    */
   async findById(id: string): Promise<Task | null> {
     try {
-      const doc = await this.collection.doc(id).get();
-      if (!doc.exists) return null;
+      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docSnap = await getDoc(docRef);
       
-      const data = { id: doc.id, ...doc.data() } as TaskFirestoreModel;
+      if (!docSnap.exists) return null;
+      
+      const data = { id: docSnap.id, ...docSnap.data() } as TaskFirestoreModel;
       if (data.isDeleted) return null;
       
       return taskMapper.toDomain(data);
@@ -59,7 +64,8 @@ export class TaskRepository {
   async save(task: Task): Promise<Task> {
     try {
       const data = taskMapper.toFirestore(task);
-      await this.collection.doc(task.id).set(data);
+      const docRef = doc(firebaseDb, this.collectionName, task.id);
+      await setDoc(docRef, data);
       return task;
     } catch (error) {
       throw new AppError(
@@ -77,7 +83,8 @@ export class TaskRepository {
   async update(task: Task): Promise<Task> {
     try {
       const data = taskMapper.toFirestore(task);
-      await this.collection.doc(task.id).update(data);
+      const docRef = doc(firebaseDb, this.collectionName, task.id);
+      await updateDoc(docRef, data as any);
       return task;
     } catch (error) {
       throw new AppError(
@@ -94,9 +101,10 @@ export class TaskRepository {
    */
   async delete(id: string): Promise<void> {
     try {
-      await this.collection.doc(id).update({
+      const docRef = doc(firebaseDb, this.collectionName, id);
+      await updateDoc(docRef, {
         isDeleted: true,
-        updatedAt: new Date()
+        updatedAt: Timestamp.now()
       });
     } catch (error) {
       throw new AppError(
@@ -113,12 +121,14 @@ export class TaskRepository {
    */
   async findByBlockId(blockId: string): Promise<Task[]> {
     try {
-      const snapshot = await this.collection
-        .where('blockId', '==', blockId)
-        .where('isDeleted', '==', false)
-        .get();
+      const q = query(
+        collection(firebaseDb, this.collectionName),
+        where('blockId', '==', blockId),
+        where('isDeleted', '==', false)
+      );
+      const snapshot = await getDocs(q);
       
-      return snapshot.docs.map(doc => 
+      return snapshot.docs.map((doc: any) => 
         taskMapper.toDomain({ id: doc.id, ...doc.data() } as TaskFirestoreModel)
       );
     } catch (error) {

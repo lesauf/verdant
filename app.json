@@ -40,7 +40,8 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "@react-native-firebase/app"
     ],
     "experiments": {
       "typedRoutes": true,

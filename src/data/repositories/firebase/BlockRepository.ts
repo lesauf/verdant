@@ -1,3 +1,4 @@
+import { collection, doc, getDoc, getDocs, query, setDoc, Timestamp, updateDoc, where } from '@react-native-firebase/firestore';
 import { Block } from '../../../domain/entities/Block';
 import { firebaseDb } from '../../../infrastructure/config/firebase';
 import { AppError } from '../../../infrastructure/errors/AppError';
@@ -7,18 +8,20 @@ import { BlockFirestoreModel, blockMapper } from '../../mappers/firebase/blockMa
  * BlockRepository - Data access for Block entities using Firestore
  */
 export class BlockRepository {
-  private collection = firebaseDb.collection('blocks');
+  private collectionName = 'blocks';
 
   /**
    * Find all non-deleted blocks
    */
   async findAll(): Promise<Block[]> {
     try {
-      const snapshot = await this.collection
-        .where('isDeleted', '==', false)
-        .get();
+      const q = query(
+        collection(firebaseDb, this.collectionName), 
+        where('isDeleted', '==', false)
+      );
+      const snapshot = await getDocs(q);
       
-      return snapshot.docs.map(doc => 
+      return snapshot.docs.map((doc: any) => 
         blockMapper.toDomain({ id: doc.id, ...doc.data() } as BlockFirestoreModel)
       );
     } catch (error) {
@@ -36,10 +39,12 @@ export class BlockRepository {
    */
   async findById(id: string): Promise<Block | null> {
     try {
-      const doc = await this.collection.doc(id).get();
-      if (!doc.exists) return null;
+      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docSnap = await getDoc(docRef);
       
-      const data = { id: doc.id, ...doc.data() } as BlockFirestoreModel;
+      if (!docSnap.exists) return null;
+      
+      const data = { id: docSnap.id, ...docSnap.data() } as BlockFirestoreModel;
       if (data.isDeleted) return null;
       
       return blockMapper.toDomain(data);
@@ -59,7 +64,8 @@ export class BlockRepository {
   async save(block: Block): Promise<Block> {
     try {
       const data = blockMapper.toFirestore(block);
-      await this.collection.doc(block.id).set(data);
+      const docRef = doc(firebaseDb, this.collectionName, block.id);
+      await setDoc(docRef, data);
       return block;
     } catch (error) {
       throw new AppError(
@@ -77,7 +83,8 @@ export class BlockRepository {
   async update(block: Block): Promise<Block> {
     try {
       const data = blockMapper.toFirestore(block);
-      await this.collection.doc(block.id).update(data);
+      const docRef = doc(firebaseDb, this.collectionName, block.id);
+      await updateDoc(docRef, data as any); // Cast to any because modular updateDoc is strict
       return block;
     } catch (error) {
       throw new AppError(
@@ -94,9 +101,10 @@ export class BlockRepository {
    */
   async delete(id: string): Promise<void> {
     try {
-      await this.collection.doc(id).update({
+      const docRef = doc(firebaseDb, this.collectionName, id);
+      await updateDoc(docRef, {
         isDeleted: true,
-        updatedAt: new Date() // Firestore doc update expects Date or Timestamp
+        updatedAt: Timestamp.now()
       });
     } catch (error) {
       throw new AppError(

@@ -1,3 +1,4 @@
+import { deleteObject, getDownloadURL, putFile, ref } from '@react-native-firebase/storage';
 import { firebaseStorage } from '../../infrastructure/config/firebase';
 import { AppError } from '../../infrastructure/errors/AppError';
 
@@ -10,9 +11,9 @@ export class StorageService {
    */
   async uploadFile(path: string, localUri: string): Promise<string> {
     try {
-      const reference = firebaseStorage.ref(path);
-      await reference.putFile(localUri);
-      return await reference.getDownloadURL();
+      const storageRef = ref(firebaseStorage, path);
+      await putFile(storageRef, localUri);
+      return await getDownloadURL(storageRef);
     } catch (error) {
       throw new AppError(
         `File upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -28,8 +29,8 @@ export class StorageService {
    */
   async deleteFile(path: string): Promise<void> {
     try {
-      const reference = firebaseStorage.ref(path);
-      await reference.delete();
+      const storageRef = ref(firebaseStorage, path);
+      await deleteObject(storageRef);
     } catch (error) {
       throw new AppError(
         `File deletion failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -45,7 +46,8 @@ export class StorageService {
    */
   async getDownloadURL(path: string): Promise<string> {
     try {
-      return await firebaseStorage.ref(path).getDownloadURL();
+      const storageRef = ref(firebaseStorage, path);
+      return await getDownloadURL(storageRef);
     } catch (error) {
       throw new AppError(
         `Failed to get download URL: ${error instanceof Error ? error.message : 'Unknown error'}`,
