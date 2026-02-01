@@ -1,4 +1,4 @@
-import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { Timestamp } from '@react-native-firebase/firestore';
 import { Note } from '../../../domain/entities/Note';
 
 /**
@@ -10,8 +10,8 @@ export interface NoteFirestoreModel {
   type: string;
   content: string;
   items: string; // JSON string for ShoppingItem[]
-  createdAt: FirebaseFirestoreTypes.Timestamp;
-  updatedAt: FirebaseFirestoreTypes.Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   isDeleted: boolean;
 }
 
@@ -44,8 +44,8 @@ export const noteMapper = {
       type: domain.type,
       content: domain.content || "",
       items: JSON.stringify(domain.items || []),
-      createdAt: FirebaseFirestoreTypes.Timestamp.fromDate(domain.createdAt || new Date()),
-      updatedAt: FirebaseFirestoreTypes.Timestamp.fromDate(domain.updatedAt || new Date()),
+      createdAt: Timestamp.fromDate(domain.createdAt || new Date()),
+      updatedAt: Timestamp.fromDate(domain.updatedAt || new Date()),
       isDeleted: domain.isDeleted,
     };
   },

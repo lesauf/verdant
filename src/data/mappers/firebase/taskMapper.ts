@@ -1,4 +1,4 @@
-import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { Timestamp } from '@react-native-firebase/firestore';
 import { Task } from '../../../domain/entities/Task';
 
 /**
@@ -11,12 +11,12 @@ export interface TaskFirestoreModel {
   status: string;
   blockId: string | null;
   assignedTo: string | null;
-  startDate: FirebaseFirestoreTypes.Timestamp | null;
-  dueDate: FirebaseFirestoreTypes.Timestamp | null;
-  completedAt: FirebaseFirestoreTypes.Timestamp | null;
-  createdAt: FirebaseFirestoreTypes.Timestamp;
-  updatedAt: FirebaseFirestoreTypes.Timestamp;
-  syncedAt: FirebaseFirestoreTypes.Timestamp | null;
+  startDate: Timestamp | null;
+  dueDate: Timestamp | null;
+  completedAt: Timestamp | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  syncedAt: Timestamp | null;
   isDeleted: boolean;
 }
 
@@ -55,12 +55,12 @@ export const taskMapper = {
       status: domain.status,
       blockId: domain.blockId,
       assignedTo: domain.assignedTo,
-      startDate: domain.startDate ? FirebaseFirestoreTypes.Timestamp.fromDate(domain.startDate) : null,
-      dueDate: domain.dueDate ? FirebaseFirestoreTypes.Timestamp.fromDate(domain.dueDate) : null,
-      completedAt: domain.completedAt ? FirebaseFirestoreTypes.Timestamp.fromDate(domain.completedAt) : null,
-      createdAt: FirebaseFirestoreTypes.Timestamp.fromDate(domain.createdAt),
-      updatedAt: FirebaseFirestoreTypes.Timestamp.fromDate(domain.updatedAt),
-      syncedAt: domain.syncedAt ? FirebaseFirestoreTypes.Timestamp.fromDate(domain.syncedAt) : null,
+      startDate: domain.startDate ? Timestamp.fromDate(domain.startDate) : null,
+      dueDate: domain.dueDate ? Timestamp.fromDate(domain.dueDate) : null,
+      completedAt: domain.completedAt ? Timestamp.fromDate(domain.completedAt) : null,
+      createdAt: Timestamp.fromDate(domain.createdAt),
+      updatedAt: Timestamp.fromDate(domain.updatedAt),
+      syncedAt: domain.syncedAt ? Timestamp.fromDate(domain.syncedAt) : null,
       isDeleted: domain.isDeleted,
     };
   },

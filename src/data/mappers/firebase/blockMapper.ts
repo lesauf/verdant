@@ -1,4 +1,4 @@
-import { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { Timestamp } from '@react-native-firebase/firestore';
 import { Block } from '../../../domain/entities/Block';
 
 /**
@@ -10,9 +10,9 @@ export interface BlockFirestoreModel {
   areaHa: number;
   status: string;
   geoJson: string | null;
-  createdAt: FirebaseFirestoreTypes.Timestamp;
-  updatedAt: FirebaseFirestoreTypes.Timestamp;
-  syncedAt: FirebaseFirestoreTypes.Timestamp | null;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  syncedAt: Timestamp | null;
   isDeleted: boolean;
 }
 
@@ -46,9 +46,9 @@ export const blockMapper = {
       areaHa: domain.areaHa,
       status: domain.status,
       geoJson: domain.geoJson ? JSON.stringify(domain.geoJson) : null,
-      createdAt: FirebaseFirestoreTypes.Timestamp.fromDate(domain.createdAt),
-      updatedAt: FirebaseFirestoreTypes.Timestamp.fromDate(domain.updatedAt),
-      syncedAt: domain.syncedAt ? FirebaseFirestoreTypes.Timestamp.fromDate(domain.syncedAt) : null,
+      createdAt: Timestamp.fromDate(domain.createdAt),
+      updatedAt: Timestamp.fromDate(domain.updatedAt),
+      syncedAt: domain.syncedAt ? Timestamp.fromDate(domain.syncedAt) : null,
       isDeleted: domain.isDeleted,
     };
   },
