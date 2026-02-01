@@ -16,11 +16,23 @@ export interface CreateTaskInput {
 }
 
 export class CreateTaskUseCase {
-  constructor(
-    private taskRepository: TaskRepository,
-    private idService: IdService,
-    private validationService: ValidationService
-  ) {}
+  private taskRepository: TaskRepository;
+  private idService: IdService;
+  private validationService: ValidationService;
+
+  constructor({ 
+    taskRepository, 
+    idService, 
+    validationService 
+  }: { 
+    taskRepository: TaskRepository; 
+    idService: IdService; 
+    validationService: ValidationService; 
+  }) {
+    this.taskRepository = taskRepository;
+    this.idService = idService;
+    this.validationService = validationService;
+  }
 
   async execute(input: CreateTaskInput): Promise<Task> {
     try {

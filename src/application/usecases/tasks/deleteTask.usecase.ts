@@ -3,7 +3,11 @@ import { AppError } from '../../../infrastructure/errors/AppError';
 import { TaskRepository } from '../../../data/repositories/firebase/TaskRepository';
 
 export class DeleteTaskUseCase {
-  constructor(private taskRepository: TaskRepository) {}
+  private taskRepository: TaskRepository;
+
+  constructor({ taskRepository }: { taskRepository: TaskRepository }) {
+    this.taskRepository = taskRepository;
+  }
 
   async execute(id: string): Promise<void> {
     try {

@@ -1,9 +1,9 @@
-import { desc, eq } from "drizzle-orm";
 import * as Crypto from 'expo-crypto';
 import * as FileSystem from "expo-file-system/legacy";
 import { create } from "zustand";
-import { db } from "../../data/sources/sqlite/client";
-import { attachments } from "../../data/sources/sqlite/schema";
+import { AttachmentRepository } from "../../data/repositories/firebase/AttachmentRepository";
+
+const attachmentRepo = new AttachmentRepository();
 
 export interface Attachment {
     id: string;
@@ -29,23 +29,24 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
 
     loadAttachments: async (taskId: string) => {
         try {
-            const result = await db.select().from(attachments)
-                .where(eq(attachments.taskId, taskId))
-                .orderBy(desc(attachments.createdAt));
+            set({ isLoading: true });
+            const result = await attachmentRepo.findByTaskId(taskId);
 
-            const entities = result.map(r => ({
+            const entities: Attachment[] = result.map(r => ({
                 id: r.id,
                 taskId: r.taskId,
                 type: r.type,
                 uri: r.uri,
-                createdAt: r.createdAt
+                createdAt: r.createdAt.toDate()
             }));
 
             set(state => ({
-                attachments: { ...state.attachments, [taskId]: entities }
+                attachments: { ...state.attachments, [taskId]: entities },
+                isLoading: false
             }));
         } catch (error) {
             console.error("Failed to load attachments:", error);
+            set({ error: "Failed to load attachments", isLoading: false });
         }
     },
 
@@ -68,16 +69,15 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
                 to: permanentUri
             });
 
-            // Save to DB
-            const newAttachment = {
+            // Save to Firebase
+            await attachmentRepo.save({
                 id,
                 taskId,
                 type: 'IMAGE',
-                uri: permanentUri, // Storing full path for simplicity now, but could be relative
+                uri: permanentUri,
                 createdAt: new Date()
-            };
+            });
 
-            await db.insert(attachments).values(newAttachment);
             await get().loadAttachments(taskId);
 
         } catch (error) {
@@ -89,16 +89,19 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
 
     deleteAttachment: async (id: string, uri: string) => {
         try {
-            // Delete from DB
-            await db.delete(attachments).where(eq(attachments.id, id));
+            // Delete from Firebase
+            await attachmentRepo.delete(id);
 
             // Delete file
             await FileSystem.deleteAsync(uri, { idempotent: true });
 
-            // Reload
+            // Note: We don't have taskId here to reload easily, 
+            // but the UI usually handles this by filtering the local state or reloading the task view.
+            // For now, we'll just keep it simple as the previous implementation did.
         } catch (error) {
             console.error("Failed to delete attachment:", error);
             set({ error: "Failed to delete attachment" });
         }
     }
 }));
+

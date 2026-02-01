@@ -15,10 +15,19 @@ export interface UpdateTaskInput {
 }
 
 export class UpdateTaskUseCase {
-  constructor(
-    private taskRepository: TaskRepository,
-    private validationService: ValidationService
-  ) {}
+  private taskRepository: TaskRepository;
+  private validationService: ValidationService;
+
+  constructor({ 
+    taskRepository, 
+    validationService 
+  }: { 
+    taskRepository: TaskRepository; 
+    validationService: ValidationService; 
+  }) {
+    this.taskRepository = taskRepository;
+    this.validationService = validationService;
+  }
 
   async execute(id: string, input: UpdateTaskInput): Promise<Task> {
     try {

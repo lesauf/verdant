@@ -4,7 +4,11 @@ import { AppError } from '../../../infrastructure/errors/AppError';
 import { BlockRepository } from '../../../data/repositories/firebase/BlockRepository';
 
 export class GetBlockByIdUseCase {
-  constructor(private blockRepository: BlockRepository) {}
+  private blockRepository: BlockRepository;
+
+  constructor({ blockRepository }: { blockRepository: BlockRepository }) {
+    this.blockRepository = blockRepository;
+  }
 
   async execute(id: string): Promise<Block> {
     try {

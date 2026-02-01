@@ -13,11 +13,23 @@ export interface CreateBlockInput {
 }
 
 export class CreateBlockUseCase {
-  constructor(
-    private blockRepository: BlockRepository,
-    private idService: IdService,
-    private validationService: ValidationService
-  ) {}
+  private blockRepository: BlockRepository;
+  private idService: IdService;
+  private validationService: ValidationService;
+
+  constructor({ 
+    blockRepository, 
+    idService, 
+    validationService 
+  }: { 
+    blockRepository: BlockRepository; 
+    idService: IdService; 
+    validationService: ValidationService; 
+  }) {
+    this.blockRepository = blockRepository;
+    this.idService = idService;
+    this.validationService = validationService;
+  }
 
   async execute(input: CreateBlockInput): Promise<Block> {
     try {

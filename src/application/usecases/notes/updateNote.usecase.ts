@@ -3,7 +3,11 @@ import { Note } from '../../../domain/entities/Note';
 import { AppError } from '../../../infrastructure/errors/AppError';
 
 export class UpdateNoteUseCase {
-  constructor(private noteRepository: NoteRepository) {}
+  private noteRepository: NoteRepository;
+
+  constructor({ noteRepository }: { noteRepository: NoteRepository }) {
+    this.noteRepository = noteRepository;
+  }
 
   async execute(id: string, updates: Partial<Note>): Promise<void> {
     try {

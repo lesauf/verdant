@@ -9,10 +9,19 @@ export interface CreateNoteInput {
 }
 
 export class CreateNoteUseCase {
-  constructor(
-    private noteRepository: NoteRepository,
-    private idService: IdService
-  ) {}
+  private noteRepository: NoteRepository;
+  private idService: IdService;
+
+  constructor({ 
+    noteRepository, 
+    idService 
+  }: { 
+    noteRepository: NoteRepository; 
+    idService: IdService; 
+  }) {
+    this.noteRepository = noteRepository;
+    this.idService = idService;
+  }
 
   async execute(input: CreateNoteInput): Promise<string> {
     try {

@@ -12,10 +12,21 @@ export interface UpdateBlockInput {
 }
 
 export class UpdateBlockUseCase {
-  constructor(
-    private blockRepository: BlockRepository,
-    private validationService: ValidationService
-  ) {}
+  static readonly $inject = ['blockRepository', 'validationService'];
+
+  private blockRepository: BlockRepository;
+  private validationService: ValidationService;
+
+  constructor({ 
+    blockRepository, 
+    validationService 
+  }: { 
+    blockRepository: BlockRepository; 
+    validationService: ValidationService; 
+  }) {
+    this.blockRepository = blockRepository;
+    this.validationService = validationService;
+  }
 
   async execute(id: string, input: UpdateBlockInput): Promise<Block> {
     try {

@@ -2,7 +2,11 @@ import { NoteRepository } from '../../../data/repositories/firebase/NoteReposito
 import { AppError } from '../../../infrastructure/errors/AppError';
 
 export class DeleteNoteUseCase {
-  constructor(private noteRepository: NoteRepository) {}
+  private noteRepository: NoteRepository;
+
+  constructor({ noteRepository }: { noteRepository: NoteRepository }) {
+    this.noteRepository = noteRepository;
+  }
 
   async execute(id: string): Promise<void> {
     try {
