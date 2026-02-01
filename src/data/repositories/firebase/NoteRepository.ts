@@ -8,15 +8,17 @@ import { NoteFirestoreModel, noteMapper } from '../../mappers/firebase/noteMappe
  * NoteRepository - Data access for Note entities using Firestore
  */
 export class NoteRepository {
-  private collectionName = 'notes';
+  private getCollectionPath(farmId: string) {
+    return `farms/${farmId}/notes`;
+  }
 
   /**
-   * Find all non-deleted notes
+   * Find all non-deleted notes for a farm
    */
-  async findAll(): Promise<Note[]> {
+  async findAll(farmId: string): Promise<Note[]> {
     try {
       const q = query(
-        collection(firebaseDb, this.collectionName),
+        collection(firebaseDb, this.getCollectionPath(farmId)),
         where('isDeleted', '==', false),
         orderBy('updatedAt', 'desc')
       );
@@ -27,7 +29,7 @@ export class NoteRepository {
       );
     } catch (error) {
       throw new AppError(
-        `Failed to fetch notes: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch notes for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'NoteRepository',
         'FETCH_NOTES_ERROR',
         error instanceof Error ? error : undefined
@@ -38,9 +40,9 @@ export class NoteRepository {
   /**
    * Find note by ID
    */
-  async findById(id: string): Promise<Note | null> {
+  async findById(farmId: string, id: string): Promise<Note | null> {
     try {
-      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(farmId), id);
       const docSnap = await getDoc(docRef);
       
       if (!docSnap.exists) return null;
@@ -51,7 +53,7 @@ export class NoteRepository {
       return noteMapper.toDomain(data);
     } catch (error) {
       throw new AppError(
-        `Failed to fetch note ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch note ${id} in farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'NoteRepository',
         'FETCH_NOTE_ERROR',
         error instanceof Error ? error : undefined
@@ -64,8 +66,9 @@ export class NoteRepository {
    */
   async save(note: Note): Promise<Note> {
     try {
+      if (!note.farmId) throw new Error('farmId is required to save a note');
       const data = noteMapper.toFirestore(note);
-      const docRef = doc(firebaseDb, this.collectionName, note.id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(note.farmId), note.id);
       await setDoc(docRef, data);
       return note;
     } catch (error) {
@@ -83,8 +86,9 @@ export class NoteRepository {
    */
   async update(note: Note): Promise<Note> {
     try {
+      if (!note.farmId) throw new Error('farmId is required to update a note');
       const data = noteMapper.toFirestore(note);
-      const docRef = doc(firebaseDb, this.collectionName, note.id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(note.farmId), note.id);
       await updateDoc(docRef, data as any);
       return note;
     } catch (error) {
@@ -100,9 +104,9 @@ export class NoteRepository {
   /**
    * Soft delete note
    */
-  async delete(id: string): Promise<void> {
+  async delete(farmId: string, id: string): Promise<void> {
     try {
-      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(farmId), id);
       await updateDoc(docRef, {
         isDeleted: true,
         updatedAt: Timestamp.now()

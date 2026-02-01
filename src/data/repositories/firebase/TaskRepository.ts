@@ -8,15 +8,17 @@ import { TaskFirestoreModel, taskMapper } from '../../mappers/firebase/taskMappe
  * TaskRepository - Data access for Task entities using Firestore
  */
 export class TaskRepository {
-  private collectionName = 'tasks';
+  private getCollectionPath(farmId: string) {
+    return `farms/${farmId}/tasks`;
+  }
 
   /**
-   * Find all non-deleted tasks
+   * Find all non-deleted tasks for a farm
    */
-  async findAll(): Promise<Task[]> {
+  async findAll(farmId: string): Promise<Task[]> {
     try {
       const q = query(
-        collection(firebaseDb, this.collectionName),
+        collection(firebaseDb, this.getCollectionPath(farmId)),
         where('isDeleted', '==', false)
       );
       const snapshot = await getDocs(q);
@@ -26,7 +28,7 @@ export class TaskRepository {
       );
     } catch (error) {
       throw new AppError(
-        `Failed to fetch tasks: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch tasks for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'TaskRepository',
         'FETCH_TASKS_ERROR',
         error instanceof Error ? error : undefined
@@ -37,9 +39,9 @@ export class TaskRepository {
   /**
    * Find task by ID
    */
-  async findById(id: string): Promise<Task | null> {
+  async findById(farmId: string, id: string): Promise<Task | null> {
     try {
-      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(farmId), id);
       const docSnap = await getDoc(docRef);
       
       if (!docSnap.exists) return null;
@@ -50,7 +52,7 @@ export class TaskRepository {
       return taskMapper.toDomain(data);
     } catch (error) {
       throw new AppError(
-        `Failed to fetch task ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch task ${id} in farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'TaskRepository',
         'FETCH_TASK_ERROR',
         error instanceof Error ? error : undefined
@@ -63,8 +65,9 @@ export class TaskRepository {
    */
   async save(task: Task): Promise<Task> {
     try {
+      if (!task.farmId) throw new Error('farmId is required to save a task');
       const data = taskMapper.toFirestore(task);
-      const docRef = doc(firebaseDb, this.collectionName, task.id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(task.farmId), task.id);
       await setDoc(docRef, data);
       return task;
     } catch (error) {
@@ -82,8 +85,9 @@ export class TaskRepository {
    */
   async update(task: Task): Promise<Task> {
     try {
+      if (!task.farmId) throw new Error('farmId is required to update a task');
       const data = taskMapper.toFirestore(task);
-      const docRef = doc(firebaseDb, this.collectionName, task.id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(task.farmId), task.id);
       await updateDoc(docRef, data as any);
       return task;
     } catch (error) {
@@ -99,9 +103,9 @@ export class TaskRepository {
   /**
    * Soft delete task
    */
-  async delete(id: string): Promise<void> {
+  async delete(farmId: string, id: string): Promise<void> {
     try {
-      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(farmId), id);
       await updateDoc(docRef, {
         isDeleted: true,
         updatedAt: Timestamp.now()
@@ -117,12 +121,12 @@ export class TaskRepository {
   }
 
   /**
-   * Find tasks by block ID
+   * Find tasks by block ID within a farm
    */
-  async findByBlockId(blockId: string): Promise<Task[]> {
+  async findByBlockId(farmId: string, blockId: string): Promise<Task[]> {
     try {
       const q = query(
-        collection(firebaseDb, this.collectionName),
+        collection(firebaseDb, this.getCollectionPath(farmId)),
         where('blockId', '==', blockId),
         where('isDeleted', '==', false)
       );
@@ -133,7 +137,7 @@ export class TaskRepository {
       );
     } catch (error) {
       throw new AppError(
-        `Failed to fetch tasks for block ${blockId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch tasks for block ${blockId} in farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'TaskRepository',
         'FETCH_TASKS_BY_BLOCK_ERROR',
         error instanceof Error ? error : undefined

@@ -7,6 +7,7 @@ import { BlockRepository } from '../../../data/repositories/firebase/BlockReposi
 
 export interface CreateBlockInput {
   name: string;
+  farmId: string;
   areaHa: number;
   status: BlockStatus;
   geoJson?: any;
@@ -36,11 +37,13 @@ export class CreateBlockUseCase {
       // Validation using shared service
       this.validationService.validateBlockName(input.name);
       this.validationService.validateArea(input.areaHa);
+      if (!input.farmId) throw new Error('farmId is required');
 
       // Create domain entity
       const block = new Block({
         id: this.idService.generate(),
         name: input.name,
+        farmId: input.farmId,
         areaHa: input.areaHa,
         status: input.status,
         geoJson: input.geoJson || null,

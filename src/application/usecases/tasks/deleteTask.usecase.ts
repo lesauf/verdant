@@ -9,19 +9,19 @@ export class DeleteTaskUseCase {
     this.taskRepository = taskRepository;
   }
 
-  async execute(id: string): Promise<void> {
+  async execute(farmId: string, id: string): Promise<void> {
     try {
       // Verify task exists
-      const task = await this.taskRepository.findById(id);
+      const task = await this.taskRepository.findById(farmId, id);
       if (!task) {
         throw new Error('Task not found');
       }
 
       // Soft delete (for sync)
-      await this.taskRepository.delete(id);
+      await this.taskRepository.delete(farmId, id);
     } catch (error) {
       throw new AppError(
-        `Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to delete task ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'DeleteTaskUseCase',
         'DELETE_TASK_ERROR',
         error instanceof Error ? error : undefined

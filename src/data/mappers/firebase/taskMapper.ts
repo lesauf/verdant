@@ -8,6 +8,7 @@ export interface TaskFirestoreModel {
   id: string;
   title: string;
   description: string | null;
+  farmId: string;
   status: string;
   blockId: string | null;
   assignedTo: string | null;
@@ -32,6 +33,7 @@ export const taskMapper = {
       id: data.id,
       title: data.title,
       description: data.description,
+      farmId: data.farmId,
       status: data.status as any,
       blockId: data.blockId,
       assignedTo: data.assignedTo,
@@ -52,6 +54,7 @@ export const taskMapper = {
     return {
       title: domain.title,
       description: domain.description,
+      farmId: domain.farmId,
       status: domain.status,
       blockId: domain.blockId,
       assignedTo: domain.assignedTo,

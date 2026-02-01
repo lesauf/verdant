@@ -28,10 +28,10 @@ export class UpdateBlockUseCase {
     this.validationService = validationService;
   }
 
-  async execute(id: string, input: UpdateBlockInput): Promise<Block> {
+  async execute(farmId: string, id: string, input: UpdateBlockInput): Promise<Block> {
     try {
       // Fetch existing block
-      const block = await this.blockRepository.findById(id);
+      const block = await this.blockRepository.findById(farmId, id);
       if (!block) {
         throw new Error('Block not found');
       }
@@ -62,7 +62,7 @@ export class UpdateBlockUseCase {
       return await this.blockRepository.update(block);
     } catch (error) {
       throw new AppError(
-        `Failed to update block: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to update block ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'UpdateBlockUseCase',
         'UPDATE_BLOCK_ERROR',
         error instanceof Error ? error : undefined

@@ -9,9 +9,9 @@ export class UpdateNoteUseCase {
     this.noteRepository = noteRepository;
   }
 
-  async execute(id: string, updates: Partial<Note>): Promise<void> {
+  async execute(farmId: string, id: string, updates: Partial<Note>): Promise<void> {
     try {
-      const note = await this.noteRepository.findById(id);
+      const note = await this.noteRepository.findById(farmId, id);
       if (!note) {
         throw new Error('Note not found');
       }
@@ -26,7 +26,7 @@ export class UpdateNoteUseCase {
       await this.noteRepository.update(note);
     } catch (error) {
       throw new AppError(
-        `Failed to update note: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to update note ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'UpdateNoteUseCase',
         'UPDATE_NOTE_ERROR',
         error instanceof Error ? error : undefined

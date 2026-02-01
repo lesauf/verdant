@@ -5,30 +5,40 @@ import React, { useEffect, useState } from "react";
 import { Alert, FlatList, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BlockStatus } from "../../../src/domain/entities/Block";
+import { useFarm } from "../../../src/presentation/context/FarmContext";
 import { useBlockStore } from "../../../src/presentation/stores";
 
 export default function BlocksScreen() {
     const { blocks, loadBlocks, createBlock } = useBlockStore();
+    const { currentFarm } = useFarm();
     const [isModalVisible, setModalVisible] = useState(false);
     const [newBlockName, setNewBlockName] = useState("");
     const [newBlockArea, setNewBlockArea] = useState("");
 
-    // Load blocks on mount
+    // Load blocks when farm changes
     useEffect(() => {
-        loadBlocks();
-    }, []);
+        if (currentFarm) {
+            loadBlocks(currentFarm.id);
+        }
+    }, [currentFarm]);
 
     const handleAddBlock = async () => {
+        if (!currentFarm) {
+            Alert.alert("Error", "No farm selected");
+            return;
+        }
+
         if (!newBlockName || !newBlockArea) {
             Alert.alert("Error", "Please fill in all fields");
             return;
         }
 
         try {
-            await createBlock({
+            await createBlock(currentFarm.id, {
                 name: newBlockName,
                 areaHa: parseFloat(newBlockArea),
                 status: "Prep" as BlockStatus,
+                farmId: currentFarm.id,
             });
 
             setModalVisible(false);

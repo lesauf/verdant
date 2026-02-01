@@ -8,15 +8,17 @@ import { BlockFirestoreModel, blockMapper } from '../../mappers/firebase/blockMa
  * BlockRepository - Data access for Block entities using Firestore
  */
 export class BlockRepository {
-  private collectionName = 'blocks';
+  private getCollectionPath(farmId: string) {
+    return `farms/${farmId}/blocks`;
+  }
 
   /**
-   * Find all non-deleted blocks
+   * Find all non-deleted blocks for a specific farm
    */
-  async findAll(): Promise<Block[]> {
+  async findAll(farmId: string): Promise<Block[]> {
     try {
       const q = query(
-        collection(firebaseDb, this.collectionName), 
+        collection(firebaseDb, this.getCollectionPath(farmId)), 
         where('isDeleted', '==', false)
       );
       const snapshot = await getDocs(q);
@@ -26,7 +28,7 @@ export class BlockRepository {
       );
     } catch (error) {
       throw new AppError(
-        `Failed to fetch blocks: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch blocks for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'BlockRepository',
         'FETCH_BLOCKS_ERROR',
         error instanceof Error ? error : undefined
@@ -35,11 +37,11 @@ export class BlockRepository {
   }
 
   /**
-   * Find block by ID
+   * Find block by ID within a farm
    */
-  async findById(id: string): Promise<Block | null> {
+  async findById(farmId: string, id: string): Promise<Block | null> {
     try {
-      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(farmId), id);
       const docSnap = await getDoc(docRef);
       
       if (!docSnap.exists) return null;
@@ -50,7 +52,7 @@ export class BlockRepository {
       return blockMapper.toDomain(data);
     } catch (error) {
       throw new AppError(
-        `Failed to fetch block ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to fetch block ${id} in farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'BlockRepository',
         'FETCH_BLOCK_ERROR',
         error instanceof Error ? error : undefined
@@ -59,12 +61,13 @@ export class BlockRepository {
   }
 
   /**
-   * Save new block
+   * Save new block to a farm
    */
   async save(block: Block): Promise<Block> {
     try {
+      if (!block.farmId) throw new Error('farmId is required to save a block');
       const data = blockMapper.toFirestore(block);
-      const docRef = doc(firebaseDb, this.collectionName, block.id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(block.farmId), block.id);
       await setDoc(docRef, data);
       return block;
     } catch (error) {
@@ -82,9 +85,10 @@ export class BlockRepository {
    */
   async update(block: Block): Promise<Block> {
     try {
+      if (!block.farmId) throw new Error('farmId is required to update a block');
       const data = blockMapper.toFirestore(block);
-      const docRef = doc(firebaseDb, this.collectionName, block.id);
-      await updateDoc(docRef, data as any); // Cast to any because modular updateDoc is strict
+      const docRef = doc(firebaseDb, this.getCollectionPath(block.farmId), block.id);
+      await updateDoc(docRef, data as any);
       return block;
     } catch (error) {
       throw new AppError(
@@ -99,9 +103,9 @@ export class BlockRepository {
   /**
    * Soft delete block
    */
-  async delete(id: string): Promise<void> {
+  async delete(farmId: string, id: string): Promise<void> {
     try {
-      const docRef = doc(firebaseDb, this.collectionName, id);
+      const docRef = doc(firebaseDb, this.getCollectionPath(farmId), id);
       await updateDoc(docRef, {
         isDeleted: true,
         updatedAt: Timestamp.now()

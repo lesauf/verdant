@@ -10,6 +10,7 @@ export interface ShoppingItem {
 export class Note {
     public readonly id!: string;
     public title!: string;
+    public farmId!: string;
     public type!: NoteType;
     public content: string = "";
     public items: ShoppingItem[] = [];

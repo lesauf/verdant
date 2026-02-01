@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFarm } from "../../src/presentation/context/FarmContext";
 import { useBlockStore } from "../../src/presentation/stores/blockStore";
 import { useTaskStore } from "../../src/presentation/stores/taskStore";
 
@@ -11,12 +12,15 @@ export default function DashboardScreen() {
   const [showQuickActions, setShowQuickActions] = useState(false);
   const { blocks, loadBlocks } = useBlockStore();
   const { tasks, loadTasks } = useTaskStore();
+  const { currentFarm } = useFarm();
 
-  // Load data on mount
+  // Load data when current farm changes
   useEffect(() => {
-    loadBlocks();
-    loadTasks();
-  }, []);
+    if (currentFarm) {
+      loadBlocks(currentFarm.id);
+      loadTasks(currentFarm.id);
+    }
+  }, [currentFarm]);
 
   // Calculate real stats
   const totalBlocks = blocks.length;
@@ -61,11 +65,11 @@ export default function DashboardScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="p-4">
         {/* Header */}
-        <View className="flex-row justify-between items-center mb-6">
-          <View>
-            <Text className="text-3xl font-bold text-gray-900">Dashboard</Text>
-            <Text className="text-gray-500 mt-1">Farm Overview</Text>
-          </View>
+        <View>
+          <Text className="text-3xl font-bold text-gray-900">Dashboard</Text>
+          <Text className="text-emerald-600 font-semibold mt-1">
+            {currentFarm ? currentFarm.name : 'Select a Farm'}
+          </Text>
         </View>
 
         {/* Stats Cards */}

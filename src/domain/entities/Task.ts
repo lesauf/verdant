@@ -4,6 +4,7 @@ export class Task {
   public readonly id!: string;
   public title!: string;
   public description!: string | null;
+  public farmId!: string;
   public status!: TaskStatus;
   public blockId!: string | null;
   public assignedTo!: string | null;

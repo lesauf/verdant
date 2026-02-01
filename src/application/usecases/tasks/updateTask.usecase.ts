@@ -29,10 +29,10 @@ export class UpdateTaskUseCase {
     this.validationService = validationService;
   }
 
-  async execute(id: string, input: UpdateTaskInput): Promise<Task> {
+  async execute(farmId: string, id: string, input: UpdateTaskInput): Promise<Task> {
     try {
       // Fetch existing task
-      const task = await this.taskRepository.findById(id);
+      const task = await this.taskRepository.findById(farmId, id);
       if (!task) {
         throw new Error('Task not found');
       }
@@ -79,7 +79,7 @@ export class UpdateTaskUseCase {
       return await this.taskRepository.update(task);
     } catch (error) {
       throw new AppError(
-        `Failed to update task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to update task ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'UpdateTaskUseCase',
         'UPDATE_TASK_ERROR',
         error instanceof Error ? error : undefined

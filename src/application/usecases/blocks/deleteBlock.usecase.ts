@@ -9,19 +9,19 @@ export class DeleteBlockUseCase {
     this.blockRepository = blockRepository;
   }
 
-  async execute(id: string): Promise<void> {
+  async execute(farmId: string, id: string): Promise<void> {
     try {
       // Verify block exists
-      const block = await this.blockRepository.findById(id);
+      const block = await this.blockRepository.findById(farmId, id);
       if (!block) {
         throw new Error('Block not found');
       }
 
       // Soft delete (for sync)
-      await this.blockRepository.delete(id);
+      await this.blockRepository.delete(farmId, id);
     } catch (error) {
       throw new AppError(
-        `Failed to delete block: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to delete block ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'DeleteBlockUseCase',
         'DELETE_BLOCK_ERROR',
         error instanceof Error ? error : undefined

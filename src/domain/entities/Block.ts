@@ -3,6 +3,7 @@ export type BlockStatus = 'Planted' | 'Prep' | 'Fallow';
 export class Block {
   public readonly id!: string;
   public name!: string;
+  public farmId!: string;
   public areaHa!: number;
   public status!: BlockStatus;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

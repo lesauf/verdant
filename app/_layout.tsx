@@ -1,8 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Drawer } from 'expo-router/drawer';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
+import { Sidebar } from '../components/navigation/Sidebar';
 import "../global.css";
+import { getContainer } from '../src/infrastructure/di/container';
+import { AuthProvider } from '../src/presentation/context/AuthContext';
+import { FarmProvider } from '../src/presentation/context/FarmContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -10,13 +14,30 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const container = getContainer();
+
+  // Resolve use cases for FarmProvider
+  const getFarmsForUserUseCase = container.resolve('getFarmsForUserUseCase');
+  const getFarmByIdUseCase = container.resolve('getFarmByIdUseCase');
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <AuthProvider>
+        <FarmProvider
+          getFarmsForUserUseCase={getFarmsForUserUseCase}
+          getFarmByIdUseCase={getFarmByIdUseCase}
+        >
+          <Drawer
+            drawerContent={(props) => <Sidebar {...props} />}
+            screenOptions={{
+              headerShown: false,
+              drawerType: 'front',
+            }}
+          >
+            <Drawer.Screen name="(tabs)" options={{ drawerLabel: 'Home' }} />
+          </Drawer>
+        </FarmProvider>
+      </AuthProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );

@@ -8,17 +8,17 @@ export class DeleteNoteUseCase {
     this.noteRepository = noteRepository;
   }
 
-  async execute(id: string): Promise<void> {
+  async execute(farmId: string, id: string): Promise<void> {
     try {
-      const note = await this.noteRepository.findById(id);
+      const note = await this.noteRepository.findById(farmId, id);
       if (!note) {
         throw new Error('Note not found');
       }
 
-      await this.noteRepository.delete(id);
+      await this.noteRepository.delete(farmId, id);
     } catch (error) {
       throw new AppError(
-        `Failed to delete note: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to delete note ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'DeleteNoteUseCase',
         'DELETE_NOTE_ERROR',
         error instanceof Error ? error : undefined

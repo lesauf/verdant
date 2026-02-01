@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import {
-  CreateBlockInput,
-  UpdateBlockInput,
+    CreateBlockInput,
+    UpdateBlockInput,
 } from '../../application/usecases/blocks';
 import { Block } from '../../domain/entities/Block';
 import { getContainer } from '../../infrastructure/di/container';
@@ -12,10 +12,10 @@ interface BlockStore {
   error: string | null;
   
   // Actions
-  loadBlocks: () => Promise<void>;
-  createBlock: (input: CreateBlockInput) => Promise<void>;
-  updateBlock: (id: string, updates: UpdateBlockInput) => Promise<void>;
-  deleteBlock: (id: string) => Promise<void>;
+  loadBlocks: (farmId: string) => Promise<void>;
+  createBlock: (farmId: string, input: CreateBlockInput) => Promise<void>;
+  updateBlock: (farmId: string, id: string, updates: UpdateBlockInput) => Promise<void>;
+  deleteBlock: (farmId: string, id: string) => Promise<void>;
   getBlockById: (id: string) => Block | undefined;
 }
 
@@ -28,12 +28,12 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
   loading: false,
   error: null,
 
-  loadBlocks: async () => {
+  loadBlocks: async (farmId: string) => {
     set({ loading: true, error: null });
     try {
       const container = getContainer();
       const getAllBlocksUseCase = container.resolve('getAllBlocksUseCase');
-      const blocks = await getAllBlocksUseCase.execute();
+      const blocks = await getAllBlocksUseCase.execute(farmId);
       set({ blocks, loading: false });
     } catch (error) {
       set({ 
@@ -43,11 +43,11 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
     }
   },
 
-  createBlock: async (input: CreateBlockInput) => {
+  createBlock: async (farmId: string, input: CreateBlockInput) => {
     try {
       const container = getContainer();
       const createBlockUseCase = container.resolve('createBlockUseCase');
-      const newBlock = await createBlockUseCase.execute(input);
+      const newBlock = await createBlockUseCase.execute({ ...input, farmId });
       set(state => ({ blocks: [...state.blocks, newBlock] }));
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to create block' });
@@ -55,11 +55,11 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
     }
   },
 
-  updateBlock: async (id: string, updates: UpdateBlockInput) => {
+  updateBlock: async (farmId: string, id: string, updates: UpdateBlockInput) => {
     try {
       const container = getContainer();
       const updateBlockUseCase = container.resolve('updateBlockUseCase');
-      const updatedBlock = await updateBlockUseCase.execute(id, updates);
+      const updatedBlock = await updateBlockUseCase.execute(farmId, id, updates);
       set(state => ({
         blocks: state.blocks.map(b => b.id === id ? updatedBlock : b)
       }));
@@ -69,11 +69,11 @@ export const useBlockStore = create<BlockStore>((set, get) => ({
     }
   },
 
-  deleteBlock: async (id: string) => {
+  deleteBlock: async (farmId: string, id: string) => {
     try {
       const container = getContainer();
       const deleteBlockUseCase = container.resolve('deleteBlockUseCase');
-      await deleteBlockUseCase.execute(id);
+      await deleteBlockUseCase.execute(farmId, id);
       set(state => ({
         blocks: state.blocks.filter(b => b.id !== id)
       }));

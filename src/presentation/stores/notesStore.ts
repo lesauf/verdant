@@ -6,10 +6,10 @@ interface NotesState {
     notes: Note[];
     isLoading: boolean;
     error: string | null;
-    loadNotes: () => Promise<void>;
-    addNote: (title: string, type: NoteType) => Promise<string>;
-    updateNote: (id: string, updates: Partial<Note>) => Promise<void>;
-    deleteNote: (id: string) => Promise<void>;
+    loadNotes: (farmId: string) => Promise<void>;
+    addNote: (farmId: string, title: string, type: NoteType) => Promise<string>;
+    updateNote: (farmId: string, id: string, updates: Partial<Note>) => Promise<void>;
+    deleteNote: (farmId: string, id: string) => Promise<void>;
 }
 
 export const useNotesStore = create<NotesState>((set, get) => ({
@@ -17,12 +17,12 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     isLoading: false,
     error: null,
 
-    loadNotes: async () => {
+    loadNotes: async (farmId: string) => {
         set({ isLoading: true, error: null });
         try {
             const container = getContainer();
             const getAllNotesUseCase = container.resolve('getAllNotesUseCase');
-            const entities = await getAllNotesUseCase.execute();
+            const entities = await getAllNotesUseCase.execute(farmId);
             set({ notes: entities, isLoading: false });
         } catch (error) {
             console.error("Failed to load notes:", error);
@@ -30,12 +30,12 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         }
     },
 
-    addNote: async (title: string, type: NoteType) => {
+    addNote: async (farmId: string, title: string, type: NoteType) => {
         try {
             const container = getContainer();
             const createNoteUseCase = container.resolve('createNoteUseCase');
-            const id = await createNoteUseCase.execute({ title, type });
-            await get().loadNotes();
+            const id = await createNoteUseCase.execute({ title, farmId, type });
+            await get().loadNotes(farmId);
             return id;
         } catch (error) {
             console.error("Failed to add note:", error);
@@ -44,24 +44,24 @@ export const useNotesStore = create<NotesState>((set, get) => ({
         }
     },
 
-    updateNote: async (id: string, updates: Partial<Note>) => {
+    updateNote: async (farmId: string, id: string, updates: Partial<Note>) => {
         try {
             const container = getContainer();
             const updateNoteUseCase = container.resolve('updateNoteUseCase');
-            await updateNoteUseCase.execute(id, updates);
-            await get().loadNotes();
+            await updateNoteUseCase.execute(farmId, id, updates);
+            await get().loadNotes(farmId);
         } catch (error) {
             console.error("Failed to update note:", error);
             set({ error: "Failed to update note" });
         }
     },
 
-    deleteNote: async (id: string) => {
+    deleteNote: async (farmId: string, id: string) => {
         try {
             const container = getContainer();
             const deleteNoteUseCase = container.resolve('deleteNoteUseCase');
-            await deleteNoteUseCase.execute(id);
-            await get().loadNotes();
+            await deleteNoteUseCase.execute(farmId, id);
+            await get().loadNotes(farmId);
         } catch (error) {
             console.error("Failed to delete note:", error);
             set({ error: "Failed to delete note" });

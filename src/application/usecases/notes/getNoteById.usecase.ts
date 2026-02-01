@@ -9,12 +9,12 @@ export class GetNoteByIdUseCase {
     this.noteRepository = noteRepository;
   }
 
-  async execute(id: string): Promise<Note | null> {
+  async execute(farmId: string, id: string): Promise<Note | null> {
     try {
-      return await this.noteRepository.findById(id);
+      return await this.noteRepository.findById(farmId, id);
     } catch (error) {
       throw new AppError(
-        `Failed to get note ${id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to get note ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'GetNoteByIdUseCase',
         'GET_NOTE_ERROR',
         error instanceof Error ? error : undefined

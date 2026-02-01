@@ -1,5 +1,6 @@
-import { faBars, faHome, faTasks, faThLarge } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faTasks, faThLarge } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { DrawerToggleButton } from '@react-navigation/drawer';
 import { Tabs } from "expo-router";
 import { useColorScheme } from "react-native";
 import "../../global.css";
@@ -12,7 +13,8 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: activeColor,
-        headerShown: false,
+        headerShown: true,
+        headerLeft: () => <DrawerToggleButton tintColor={colorScheme === 'dark' ? '#fff' : '#000'} />,
         tabBarStyle: {
           borderTopWidth: 0,
           elevation: 0,
@@ -45,14 +47,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="menu/index"
         options={{
-          title: "Menu",
-          tabBarIcon: ({ color }) => <FontAwesomeIcon icon={faBars} size={24} color={color} />,
+          href: null, // Remove from tab bar
         }}
       />
       <Tabs.Screen
         name="blocks/[id]"
         options={{
-          href: null, // Hide dynamic route from tab bar
+          href: null,
         }}
       />
     </Tabs>

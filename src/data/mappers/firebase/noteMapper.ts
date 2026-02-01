@@ -7,6 +7,7 @@ import { Note } from '../../../domain/entities/Note';
 export interface NoteFirestoreModel {
   id: string;
   title: string;
+  farmId: string;
   type: string;
   content: string;
   items: string; // JSON string for ShoppingItem[]
@@ -26,6 +27,7 @@ export const noteMapper = {
     return new Note({
       id: data.id,
       title: data.title,
+      farmId: data.farmId,
       type: data.type as any,
       content: data.content,
       items: data.items ? JSON.parse(data.items) : [],
@@ -41,6 +43,7 @@ export const noteMapper = {
   toFirestore(domain: Note): Omit<NoteFirestoreModel, 'id'> {
     return {
       title: domain.title,
+      farmId: domain.farmId,
       type: domain.type,
       content: domain.content || "",
       items: JSON.stringify(domain.items || []),

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import {
-  CreateTaskInput,
-  UpdateTaskInput,
+    CreateTaskInput,
+    UpdateTaskInput,
 } from '../../application/usecases/tasks';
 import { Task } from '../../domain/entities/Task';
 import { getContainer } from '../../infrastructure/di/container';
@@ -12,11 +12,11 @@ interface TaskStore {
   error: string | null;
   
   // Actions
-  loadTasks: () => Promise<void>;
-  createTask: (input: CreateTaskInput) => Promise<void>;
-  updateTask: (id: string, updates: UpdateTaskInput) => Promise<void>;
-  deleteTask: (id: string) => Promise<void>;
-  toggleTaskComplete: (id: string) => Promise<void>;
+  loadTasks: (farmId: string) => Promise<void>;
+  createTask: (farmId: string, input: CreateTaskInput) => Promise<void>;
+  updateTask: (farmId: string, id: string, updates: UpdateTaskInput) => Promise<void>;
+  deleteTask: (farmId: string, id: string) => Promise<void>;
+  toggleTaskComplete: (farmId: string, id: string) => Promise<void>;
   getTasksByBlockId: (blockId: string) => Task[];
 }
 
@@ -29,12 +29,12 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
   loading: false,
   error: null,
 
-  loadTasks: async () => {
+  loadTasks: async (farmId: string) => {
     set({ loading: true, error: null });
     try {
       const container = getContainer();
       const getAllTasksUseCase = container.resolve('getAllTasksUseCase');
-      const tasks = await getAllTasksUseCase.execute();
+      const tasks = await getAllTasksUseCase.execute(farmId);
       set({ tasks, loading: false });
     } catch (error) {
       set({ 
@@ -44,11 +44,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  createTask: async (input: CreateTaskInput) => {
+  createTask: async (farmId: string, input: CreateTaskInput) => {
     try {
       const container = getContainer();
       const createTaskUseCase = container.resolve('createTaskUseCase');
-      const newTask = await createTaskUseCase.execute(input);
+      const newTask = await createTaskUseCase.execute({ ...input, farmId });
       set(state => ({ tasks: [...state.tasks, newTask] }));
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to create task' });
@@ -56,11 +56,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  updateTask: async (id: string, updates: UpdateTaskInput) => {
+  updateTask: async (farmId: string, id: string, updates: UpdateTaskInput) => {
     try {
       const container = getContainer();
       const updateTaskUseCase = container.resolve('updateTaskUseCase');
-      const updatedTask = await updateTaskUseCase.execute(id, updates);
+      const updatedTask = await updateTaskUseCase.execute(farmId, id, updates);
       set(state => ({
         tasks: state.tasks.map(t => t.id === id ? updatedTask : t)
       }));
@@ -70,11 +70,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  deleteTask: async (id: string) => {
+  deleteTask: async (farmId: string, id: string) => {
     try {
       const container = getContainer();
       const deleteTaskUseCase = container.resolve('deleteTaskUseCase');
-      await deleteTaskUseCase.execute(id);
+      await deleteTaskUseCase.execute(farmId, id);
       set(state => ({
         tasks: state.tasks.filter(t => t.id !== id)
       }));
@@ -84,11 +84,11 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     }
   },
 
-  toggleTaskComplete: async (id: string) => {
+  toggleTaskComplete: async (farmId: string, id: string) => {
     try {
       const container = getContainer();
       const toggleTaskCompleteUseCase = container.resolve('toggleTaskCompleteUseCase');
-      const updatedTask = await toggleTaskCompleteUseCase.execute(id);
+      const updatedTask = await toggleTaskCompleteUseCase.execute(farmId, id);
       set(state => ({
         tasks: state.tasks.map(t => t.id === id ? updatedTask : t)
       }));

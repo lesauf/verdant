@@ -9,12 +9,12 @@ export class GetAllNotesUseCase {
     this.noteRepository = noteRepository;
   }
 
-  async execute(): Promise<Note[]> {
+  async execute(farmId: string): Promise<Note[]> {
     try {
-      return await this.noteRepository.findAll();
+      return await this.noteRepository.findAll(farmId);
     } catch (error) {
       throw new AppError(
-        `Failed to get notes: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to get notes for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'GetAllNotesUseCase',
         'GET_NOTES_ERROR',
         error instanceof Error ? error : undefined

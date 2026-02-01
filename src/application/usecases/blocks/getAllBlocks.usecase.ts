@@ -10,12 +10,12 @@ export class GetAllBlocksUseCase {
     this.blockRepository = blockRepository;
   }
 
-  async execute(): Promise<Block[]> {
+  async execute(farmId: string): Promise<Block[]> {
     try {
-      return await this.blockRepository.findAll();
+      return await this.blockRepository.findAll(farmId);
     } catch (error) {
       throw new AppError(
-        `Failed to get blocks: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to get blocks for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'GetAllBlocksUseCase',
         'GET_BLOCKS_ERROR',
         error instanceof Error ? error : undefined

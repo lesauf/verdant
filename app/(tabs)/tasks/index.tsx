@@ -11,12 +11,14 @@ import GanttView from "../../../components/schedule/GanttView";
 import ScheduleFilters from "../../../components/schedule/ScheduleFilters";
 import TaskItem from "../../../components/tasks/TaskItem";
 import ViewTaskModal from "../../../components/tasks/ViewTaskModal";
+import { useFarm } from "../../../src/presentation/context/FarmContext";
 import { useBlockStore } from "../../../src/presentation/stores/blockStore";
 import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
 export default function TasksScreen() {
     const { tasks, loadTasks, createTask, updateTask, deleteTask, toggleTaskComplete } = useTaskStore();
     const { blocks, loadBlocks } = useBlockStore();
+    const { currentFarm } = useFarm();
 
     // View State
     const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'gantt'>('list');
@@ -24,11 +26,13 @@ export default function TasksScreen() {
     const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
 
-    // Load data on mount
+    // Load data when current farm changes
     useEffect(() => {
-        loadTasks();
-        loadBlocks();
-    }, []);
+        if (currentFarm) {
+            loadTasks(currentFarm.id);
+            loadBlocks(currentFarm.id);
+        }
+    }, [currentFarm]);
 
     // Filter tasks
     const filteredTasks = useMemo(() => {
@@ -94,19 +98,25 @@ export default function TasksScreen() {
     const [selectedTaskForView, setSelectedTaskForView] = useState<any | null>(null);
 
     const handleAddTask = async () => {
+        if (!currentFarm) {
+            Alert.alert("Error", "No farm selected");
+            return;
+        }
+
         if (!newTaskTitle) {
             Alert.alert("Error", "Please enter a task title");
             return;
         }
 
         try {
-            await createTask({
+            await createTask(currentFarm.id, {
                 title: newTaskTitle,
                 description: newTaskDescription || undefined,
                 status: "Todo",
                 blockId: selectedBlockIdForNewTask || undefined,
                 startDate: startDate || undefined,
                 dueDate: dueDate || undefined,
+                farmId: currentFarm.id,
             });
 
             // Reset form
@@ -145,22 +155,27 @@ export default function TasksScreen() {
             data={data}
             keyExtractor={(item) => item.id}
             ListHeaderComponent={header}
-            renderItem={({ item }) => (
-                <TaskItem
-                    task={item}
-                    toggleTaskComplete={toggleTaskComplete}
-                    onUpdate={(taskId, updates) => updateTask(taskId, {
-                        ...updates,
-                        description: updates.description ?? undefined,
-                        blockId: updates.blockId ?? undefined,
-                        assignedTo: updates.assignedTo ?? undefined,
-                        startDate: updates.startDate ?? undefined,
-                        dueDate: updates.dueDate ?? undefined,
-                    })}
-                    onDelete={deleteTask}
-                    showBlockSelector={true}
-                />
-            )}
+            renderItem={({ item }) => {
+                const farmId = currentFarm?.id;
+                if (!farmId) return null;
+
+                return (
+                    <TaskItem
+                        task={item}
+                        toggleTaskComplete={(taskId) => toggleTaskComplete(farmId, taskId)}
+                        onUpdate={(taskId, updates) => updateTask(farmId, taskId, {
+                            ...updates,
+                            description: updates.description ?? undefined,
+                            blockId: updates.blockId ?? undefined,
+                            assignedTo: updates.assignedTo ?? undefined,
+                            startDate: updates.startDate ?? undefined,
+                            dueDate: updates.dueDate ?? undefined,
+                        })}
+                        onDelete={(taskId) => deleteTask(farmId, taskId)}
+                        showBlockSelector={true}
+                    />
+                );
+            }}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 80, paddingTop: 16 }}
             ListEmptyComponent={
                 <View className="items-center justify-center mt-10">

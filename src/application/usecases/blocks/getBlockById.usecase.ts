@@ -10,16 +10,16 @@ export class GetBlockByIdUseCase {
     this.blockRepository = blockRepository;
   }
 
-  async execute(id: string): Promise<Block> {
+  async execute(farmId: string, id: string): Promise<Block> {
     try {
-      const block = await this.blockRepository.findById(id);
+      const block = await this.blockRepository.findById(farmId, id);
       if (!block) {
         throw new Error('Block not found');
       }
       return block;
     } catch (error) {
       throw new AppError(
-        `Failed to get block: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to get block ${id} for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'GetBlockByIdUseCase',
         'GET_BLOCK_ERROR',
         error instanceof Error ? error : undefined

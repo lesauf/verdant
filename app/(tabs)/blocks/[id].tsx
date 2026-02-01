@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import EditBlockModal from "../../../components/blocks/EditBlockModal";
 import AddTaskModal from "../../../components/tasks/AddTaskModal";
 import TaskItem from "../../../components/tasks/TaskItem";
+import { useFarm } from "../../../src/presentation/context/FarmContext";
 import { useBlockStore } from "../../../src/presentation/stores/blockStore";
 import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 
@@ -14,6 +15,7 @@ export default function BlockDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const { blocks, loadBlocks, updateBlock, deleteBlock } = useBlockStore();
     const { tasks: allTasks, loadTasks, createTask, updateTask, deleteTask, toggleTaskComplete } = useTaskStore();
+    const { currentFarm } = useFarm();
 
     const block = blocks.find(b => b.id === String(id));
 
@@ -22,11 +24,13 @@ export default function BlockDetailsScreen() {
         return allTasks.filter(t => t.blockId === String(id));
     }, [allTasks, id]);
 
-    // Load data on mount
+    // Load data when current farm changes
     useEffect(() => {
-        loadBlocks();
-        loadTasks();
-    }, []);
+        if (currentFarm) {
+            loadBlocks(currentFarm.id);
+            loadTasks(currentFarm.id);
+        }
+    }, [currentFarm]);
 
     // Modal visibility state
     const [isEditBlockModalVisible, setEditBlockModalVisible] = React.useState(false);
@@ -50,8 +54,10 @@ export default function BlockDetailsScreen() {
                     text: "Delete",
                     style: "destructive",
                     onPress: async () => {
-                        await deleteBlock(String(id));
-                        router.back();
+                        if (currentFarm) {
+                            await deleteBlock(currentFarm.id, String(id));
+                            router.back();
+                        }
                     }
                 }
             ]
@@ -117,8 +123,8 @@ export default function BlockDetailsScreen() {
                         renderItem={({ item }) => (
                             <TaskItem
                                 task={item}
-                                toggleTaskComplete={toggleTaskComplete}
-                                onUpdate={(taskId, updates) => updateTask(taskId, {
+                                toggleTaskComplete={(taskId) => currentFarm && toggleTaskComplete(currentFarm.id, taskId)}
+                                onUpdate={(taskId, updates) => currentFarm && updateTask(currentFarm.id, taskId, {
                                     ...updates,
                                     description: updates.description ?? undefined,
                                     blockId: updates.blockId ?? undefined,
@@ -126,7 +132,7 @@ export default function BlockDetailsScreen() {
                                     startDate: updates.startDate ?? undefined,
                                     dueDate: updates.dueDate ?? undefined,
                                 })}
-                                onDelete={deleteTask}
+                                onDelete={(taskId) => currentFarm && deleteTask(currentFarm.id, taskId)}
                                 showBlockSelector={false}
                             />
                         )}
@@ -148,8 +154,10 @@ export default function BlockDetailsScreen() {
                 block={block}
                 onClose={() => setEditBlockModalVisible(false)}
                 onSave={async (blockId, name, areaHa, status) => {
-                    await updateBlock(blockId, { name, areaHa, status });
-                    setEditBlockModalVisible(false);
+                    if (currentFarm) {
+                        await updateBlock(currentFarm.id, blockId, { name, areaHa, status });
+                        setEditBlockModalVisible(false);
+                    }
                 }}
             />
 
@@ -159,15 +167,18 @@ export default function BlockDetailsScreen() {
                 blockName={block.name}
                 onClose={() => setAddTaskModalVisible(false)}
                 onAdd={async (task) => {
-                    await createTask({
-                        ...task,
-                        description: task.description ?? undefined,
-                        assignedTo: task.assignedTo ?? undefined,
-                        startDate: task.startDate ?? undefined,
-                        dueDate: task.dueDate ?? undefined,
-                        blockId: String(id),
-                    });
-                    setAddTaskModalVisible(false);
+                    if (currentFarm) {
+                        await createTask(currentFarm.id, {
+                            ...task,
+                            description: task.description ?? undefined,
+                            assignedTo: task.assignedTo ?? undefined,
+                            startDate: task.startDate ?? undefined,
+                            dueDate: task.dueDate ?? undefined,
+                            blockId: String(id),
+                            farmId: currentFarm.id,
+                        });
+                        setAddTaskModalVisible(false);
+                    }
                 }}
             />
         </SafeAreaView>

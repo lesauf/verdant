@@ -10,10 +10,10 @@ export class ToggleTaskCompleteUseCase {
     this.taskRepository = taskRepository;
   }
 
-  async execute(id: string): Promise<Task> {
+  async execute(farmId: string, id: string): Promise<Task> {
     try {
       // Fetch task
-      const task = await this.taskRepository.findById(id);
+      const task = await this.taskRepository.findById(farmId, id);
       if (!task) {
         throw new Error('Task not found');
       }
@@ -29,7 +29,7 @@ export class ToggleTaskCompleteUseCase {
       return await this.taskRepository.update(task);
     } catch (error) {
       throw new AppError(
-        `Failed to toggle task completion: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to toggle task completion for task ${id} in farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'ToggleTaskCompleteUseCase',
         'TOGGLE_TASK_ERROR',
         error instanceof Error ? error : undefined

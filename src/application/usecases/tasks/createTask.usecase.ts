@@ -7,6 +7,7 @@ import { TaskRepository } from '../../../data/repositories/firebase/TaskReposito
 
 export interface CreateTaskInput {
   title: string;
+  farmId: string;
   description?: string;
   status?: TaskStatus;
   blockId?: string;
@@ -42,11 +43,13 @@ export class CreateTaskUseCase {
         input.startDate || null,
         input.dueDate || null
       );
+      if (!input.farmId) throw new Error('farmId is required');
 
       // Create domain entity
       const task = new Task({
         id: this.idService.generate(),
         title: input.title,
+        farmId: input.farmId,
         description: input.description || null,
         status: input.status || 'Todo',
         blockId: input.blockId || null,

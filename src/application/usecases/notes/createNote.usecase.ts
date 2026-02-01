@@ -5,6 +5,7 @@ import { IdService } from '../../services/id.service';
 
 export interface CreateNoteInput {
   title: string;
+  farmId: string;
   type: NoteType;
 }
 
@@ -25,10 +26,12 @@ export class CreateNoteUseCase {
 
   async execute(input: CreateNoteInput): Promise<string> {
     try {
+      if (!input.farmId) throw new Error('farmId is required');
       const now = new Date();
       const note = new Note({
         id: this.idService.generate(),
         title: input.title,
+        farmId: input.farmId,
         type: input.type,
         content: "",
         items: [],

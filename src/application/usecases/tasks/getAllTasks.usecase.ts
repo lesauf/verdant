@@ -10,12 +10,12 @@ export class GetAllTasksUseCase {
     this.taskRepository = taskRepository;
   }
 
-  async execute(): Promise<Task[]> {
+  async execute(farmId: string): Promise<Task[]> {
     try {
-      return await this.taskRepository.findAll();
+      return await this.taskRepository.findAll(farmId);
     } catch (error) {
       throw new AppError(
-        `Failed to get tasks: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to get tasks for farm ${farmId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'GetAllTasksUseCase',
         'GET_TASKS_ERROR',
         error instanceof Error ? error : undefined
