@@ -8,6 +8,7 @@ interface FarmContextData {
     availableFarms: Farm[];
     userRole: FarmRole | null;
     isLoading: boolean;
+    isInitialLoad: boolean;
     error: string | null;
     selectFarm: (farmId: string) => Promise<void>;
     refreshFarms: () => Promise<void>;
@@ -29,6 +30,7 @@ export const FarmProvider: React.FC<{
     const [availableFarms, setAvailableFarms] = useState<Farm[]>([]);
     const [userRole, setUserRole] = useState<FarmRole | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const createFarm = async (name: string) => {
@@ -76,6 +78,7 @@ export const FarmProvider: React.FC<{
             setError(err instanceof Error ? err.message : 'Failed to fetch farms');
         } finally {
             setIsLoading(false);
+            setIsInitialLoad(false);
         }
     }, [user, currentFarm, getFarmsForUserUseCase]);
 
@@ -117,6 +120,7 @@ export const FarmProvider: React.FC<{
                 availableFarms,
                 userRole,
                 isLoading,
+                isInitialLoad,
                 error,
                 selectFarm,
                 refreshFarms,

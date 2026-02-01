@@ -4,15 +4,24 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AddFarmModal } from "../../components/farms/AddFarmModal";
 import { useFarm } from "../../src/presentation/context/FarmContext";
 import { useBlockStore } from "../../src/presentation/stores/blockStore";
 import { useTaskStore } from "../../src/presentation/stores/taskStore";
 
 export default function DashboardScreen() {
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [isAddFarmModalVisible, setIsAddFarmModalVisible] = useState(false);
   const { blocks, loadBlocks } = useBlockStore();
   const { tasks, loadTasks } = useTaskStore();
-  const { currentFarm } = useFarm();
+  const { currentFarm, availableFarms, isInitialLoad } = useFarm();
+
+  // Show modal if no farms on initial load
+  useEffect(() => {
+    if (!isInitialLoad && availableFarms.length === 0) {
+      setIsAddFarmModalVisible(true);
+    }
+  }, [availableFarms, isInitialLoad]);
 
   // Load data when current farm changes
   useEffect(() => {
@@ -127,6 +136,13 @@ export default function DashboardScreen() {
           )}
         </View>
       </ScrollView>
+
+      <AddFarmModal
+        visible={isAddFarmModalVisible}
+        onClose={() => setIsAddFarmModalVisible(false)}
+        message={availableFarms.length === 0 ? "You need at least one farm to get started. Please create your first farm below." : undefined}
+        preventClose={availableFarms.length === 0}
+      />
     </SafeAreaView>
   );
 }

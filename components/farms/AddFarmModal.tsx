@@ -6,9 +6,11 @@ import { IconSymbol } from '../ui/icon-symbol';
 interface AddFarmModalProps {
     visible: boolean;
     onClose: () => void;
+    message?: string;
+    preventClose?: boolean;
 }
 
-export function AddFarmModal({ visible, onClose }: AddFarmModalProps) {
+export function AddFarmModal({ visible, onClose, message, preventClose }: AddFarmModalProps) {
     const { createFarm, isLoading } = useFarm();
     const [farmName, setFarmName] = useState('');
 
@@ -36,16 +38,25 @@ export function AddFarmModal({ visible, onClose }: AddFarmModalProps) {
             animationType="fade"
             transparent={true}
             visible={visible}
-            onRequestClose={onClose}
+            onRequestClose={preventClose ? () => { } : onClose}
         >
             <View style={styles.centeredView}>
                 <View style={styles.modalView}>
                     <View style={styles.header}>
                         <Text style={styles.modalText}>Create New Farm</Text>
-                        <TouchableOpacity onPress={onClose} disabled={isLoading}>
-                            <IconSymbol name="xmark" size={20} color="#9ca3af" />
-                        </TouchableOpacity>
+                        {!preventClose && (
+                            <TouchableOpacity onPress={onClose} disabled={isLoading}>
+                                <IconSymbol name="xmark" size={20} color="#9ca3af" />
+                            </TouchableOpacity>
+                        )}
                     </View>
+
+                    {message && (
+                        <View style={styles.messageBox}>
+                            <IconSymbol name="info.circle" size={16} color="#059669" />
+                            <Text style={styles.messageText}>{message}</Text>
+                        </View>
+                    )}
 
                     <TextInput
                         style={styles.input}
@@ -127,5 +138,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         marginBottom: 20,
         fontSize: 16,
+    },
+    messageBox: {
+        flexDirection: 'row',
+        backgroundColor: '#ecfdf5',
+        padding: 12,
+        borderRadius: 10,
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    messageText: {
+        color: '#065f46',
+        fontSize: 14,
+        marginLeft: 8,
+        flex: 1,
     },
 });
