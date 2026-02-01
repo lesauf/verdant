@@ -19,6 +19,8 @@ export default function RootLayout() {
   // Resolve use cases for FarmProvider
   const getFarmsForUserUseCase = container.resolve('getFarmsForUserUseCase');
   const getFarmByIdUseCase = container.resolve('getFarmByIdUseCase');
+  const createFarmUseCase = container.resolve('createFarmUseCase');
+  const checkPermissionUseCase = container.resolve('checkPermissionUseCase');
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -26,6 +28,8 @@ export default function RootLayout() {
         <FarmProvider
           getFarmsForUserUseCase={getFarmsForUserUseCase}
           getFarmByIdUseCase={getFarmByIdUseCase}
+          createFarmUseCase={createFarmUseCase}
+          checkPermissionUseCase={checkPermissionUseCase}
         >
           <Drawer
             drawerContent={(props) => <Sidebar {...props} />}

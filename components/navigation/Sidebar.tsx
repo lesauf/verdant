@@ -1,16 +1,28 @@
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import React, { useState } from 'react';
+import { LayoutAnimation, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, UIManager, useColorScheme, View } from 'react-native';
 import { Colors } from '../../constants/theme';
 import { useAuth } from '../../src/presentation/context/AuthContext';
 import { useFarm } from '../../src/presentation/context/FarmContext';
+import { AddFarmModal } from '../farms/AddFarmModal';
 import { IconSymbol } from '../ui/icon-symbol';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export function Sidebar(props: DrawerContentComponentProps) {
     const colorScheme = useColorScheme();
     const { currentFarm, availableFarms, selectFarm } = useFarm();
     const { user } = useAuth();
+    const [isFarmsCollapsed, setIsFarmsCollapsed] = useState(false);
+    const [isAddFarmModalVisible, setIsAddFarmModalVisible] = useState(false);
     const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
+
+    const toggleFarms = () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setIsFarmsCollapsed(!isFarmsCollapsed);
+    };
 
     const activeColor = '#22c55e'; // Green-500
     const backgroundColor = theme.background;
@@ -30,40 +42,59 @@ export function Sidebar(props: DrawerContentComponentProps) {
             </View>
 
             <ScrollView style={styles.content}>
-                <Text style={[styles.sectionTitle, { color: secondaryTextColor }]}>FARMS</Text>
-                {availableFarms.map((farm) => (
-                    <TouchableOpacity
-                        key={farm.id}
-                        style={[
-                            styles.farmItem,
-                            currentFarm?.id === farm.id && { backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#f3f4f6' }
-                        ]}
-                        onPress={() => {
-                            selectFarm(farm.id);
-                            props.navigation.closeDrawer();
-                        }}
-                    >
-                        <IconSymbol
-                            name="house.fill"
-                            size={20}
-                            color={currentFarm?.id === farm.id ? activeColor : secondaryTextColor}
-                        />
-                        <Text
-                            style={[
-                                styles.farmName,
-                                { color: textColor },
-                                currentFarm?.id === farm.id && { fontWeight: 'bold', color: activeColor }
-                            ]}
-                        >
-                            {farm.name}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-
-                <TouchableOpacity style={styles.addItem}>
-                    <IconSymbol name="plus" size={20} color={activeColor} />
-                    <Text style={[styles.addItemText, { color: activeColor }]}>Add New Farm</Text>
+                <TouchableOpacity
+                    style={styles.sectionHeader}
+                    onPress={toggleFarms}
+                    activeOpacity={0.7}
+                >
+                    <Text style={[styles.sectionTitle, { color: secondaryTextColor }]}>FARMS</Text>
+                    <IconSymbol
+                        name={isFarmsCollapsed ? "chevron.right" : "chevron.down"}
+                        size={14}
+                        color={secondaryTextColor}
+                    />
                 </TouchableOpacity>
+
+                {!isFarmsCollapsed && (
+                    <View>
+                        {availableFarms.map((farm) => (
+                            <TouchableOpacity
+                                key={farm.id}
+                                style={[
+                                    styles.farmItem,
+                                    currentFarm?.id === farm.id && { backgroundColor: colorScheme === 'dark' ? '#1f2937' : '#f3f4f6' }
+                                ]}
+                                onPress={() => {
+                                    selectFarm(farm.id);
+                                    props.navigation.closeDrawer();
+                                }}
+                            >
+                                <IconSymbol
+                                    name="house.fill"
+                                    size={20}
+                                    color={currentFarm?.id === farm.id ? activeColor : secondaryTextColor}
+                                />
+                                <Text
+                                    style={[
+                                        styles.farmName,
+                                        { color: textColor },
+                                        currentFarm?.id === farm.id && { fontWeight: 'bold', color: activeColor }
+                                    ]}
+                                >
+                                    {farm.name}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+
+                        <TouchableOpacity
+                            style={styles.addItem}
+                            onPress={() => setIsAddFarmModalVisible(true)}
+                        >
+                            <IconSymbol name="plus" size={20} color={activeColor} />
+                            <Text style={[styles.addItemText, { color: activeColor }]}>Add New Farm</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 <View style={styles.divider} />
 
@@ -83,6 +114,11 @@ export function Sidebar(props: DrawerContentComponentProps) {
                     <Text style={styles.logoutText}>Sign Out</Text>
                 </TouchableOpacity>
             </View>
+
+            <AddFarmModal
+                visible={isAddFarmModalVisible}
+                onClose={() => setIsAddFarmModalVisible(false)}
+            />
         </SafeAreaView>
     );
 }
@@ -115,12 +151,17 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
     },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingRight: 8,
+        marginBottom: 8,
+    },
     sectionTitle: {
         fontSize: 12,
         fontWeight: 'bold',
         letterSpacing: 1,
-        marginBottom: 8,
-        marginLeft: 8,
     },
     farmItem: {
         flexDirection: 'row',

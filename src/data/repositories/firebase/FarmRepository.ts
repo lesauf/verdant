@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from '@react-native-firebase/firestore';
+import firestore, { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from '@react-native-firebase/firestore';
 import { Farm, FarmMember } from '../../../domain/entities/Farm';
 import { firebaseDb } from '../../../infrastructure/config/firebase';
 import { AppError } from '../../../infrastructure/errors/AppError';
@@ -16,29 +16,40 @@ export class FarmRepository {
    */
   async findAllForUser(userId: string): Promise<Farm[]> {
     try {
-      // Note: This requires a composite index if we were querying multiple fields,
-      // but here we might need to find farms where ownerId == userId 
-      // AND also find farms where user is in the 'members' subcollection.
-      // Firestore doesn't easily support "find document where subcollection contains X" across all documents.
+      console.log('FarmRepository: Fetching farms for user', userId);
       
-      // Approach:
-      // 1. Find farms where ownerId == userId
-      const ownedQuery = query(
-        collection(firebaseDb, this.collectionName),
-        where('ownerId', '==', userId),
-        where('isDeleted', '==', false)
+      // 1. Find farms where user is a member using collectionGroup
+      const membersQuery = query(
+        firestore().collectionGroup('members') as any,
+        where('userId', '==', userId)
       );
-      const ownedSnapshot = await getDocs(ownedQuery);
-      const ownedFarms = ownedSnapshot.docs.map((doc: any) => 
-        farmMapper.toDomain({ id: doc.id, ...doc.data() } as FarmFirestoreModel)
-      );
+      
+      const memberSnapshots = await getDocs(membersQuery);
+      console.log(`FarmRepository: Found ${memberSnapshots.docs.length} memberships`);
+      
+      const farmIds = memberSnapshots.docs.map((docSnap: any) => {
+        // The parent of the member document is the 'members' collection,
+        // and its parent is the farm document.
+        return docSnap.ref.parent.parent?.id;
+      }).filter((id: string | undefined): id is string => !!id);
 
-      // 2. Note: For members, in a real app, we might store a list of farmIds on the user profile 
-      // or use a collectionGroup query on 'members'. 
-      // For now, let's stick to ownerId for the initial implementation and add collectionGroup later if needed.
+      if (farmIds.length === 0) {
+        console.log('FarmRepository: No farms found for user');
+        return [];
+      }
+
+      // 2. Fetch the actual farm documents
+      // Note: Firestore 'where in' is limited to 10-30 IDs usually.
+      // For now we fetch them individually or in batches if needed.
+      const farmPromises = farmIds.map(id => this.findById(id));
+      const farms = await Promise.all(farmPromises);
       
-      return ownedFarms;
+      const activeFarms = farms.filter((f: Farm | null): f is Farm => f !== null);
+      console.log(`FarmRepository: Returning ${activeFarms.length} active farms`);
+      
+      return activeFarms;
     } catch (error) {
+      console.error('FarmRepository: Error in findAllForUser', error);
       throw new AppError(
         `Failed to fetch farms: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'FarmRepository',
@@ -76,12 +87,14 @@ export class FarmRepository {
    * Save new farm
    */
   async save(farm: Farm): Promise<Farm> {
+    console.log('FarmRepository: Saving farm', farm.id);
     try {
       const data = farmMapper.toFirestore(farm);
       const docRef = doc(firebaseDb, this.collectionName, farm.id);
+      console.log('FarmRepository: Setting farm document');
       await setDoc(docRef, data);
       
-      // Also add the owner to the members subcollection by default
+      console.log('FarmRepository: Adding owner to members subcollection');
       const memberRef = doc(firebaseDb, `${this.collectionName}/${farm.id}/members`, farm.ownerId);
       await setDoc(memberRef, farmMemberMapper.toFirestore({
         userId: farm.ownerId,
@@ -90,8 +103,10 @@ export class FarmRepository {
         joinedAt: new Date()
       }));
 
+      console.log('FarmRepository: Farm saved successfully');
       return farm;
     } catch (error) {
+      console.error('FarmRepository: Error saving farm', error);
       throw new AppError(
         `Failed to save farm: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'FarmRepository',
