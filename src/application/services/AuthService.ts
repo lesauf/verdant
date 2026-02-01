@@ -1,4 +1,10 @@
-import { FirebaseAuthTypes, createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from '@react-native-firebase/auth';
+import auth, {
+    FirebaseAuthTypes,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut
+} from '@react-native-firebase/auth';
 import { firebaseAuth } from '../../infrastructure/config/firebase';
 import { AppError } from '../../infrastructure/errors/AppError';
 
@@ -40,6 +46,25 @@ export class AuthService {
         `Sign in failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'AuthService',
         'AUTH_SIGNIN_ERROR',
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  /**
+   * Sign in with Google
+   */
+  async signInWithGoogle(idToken: string): Promise<FirebaseAuthTypes.UserCredential> {
+    try {
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      // Use the generic signInWithCredential method from the modular API 
+      // or just call it on the auth object if using namespaced
+      return await auth().signInWithCredential(googleCredential);
+    } catch (error) {
+      throw new AppError(
+        `Google sign in failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'AuthService',
+        'AUTH_GOOGLE_ERROR',
         error instanceof Error ? error : undefined
       );
     }

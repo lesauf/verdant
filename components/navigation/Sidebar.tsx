@@ -14,7 +14,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 export function Sidebar(props: DrawerContentComponentProps) {
     const colorScheme = useColorScheme();
     const { currentFarm, availableFarms, selectFarm } = useFarm();
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const [isFarmsCollapsed, setIsFarmsCollapsed] = useState(false);
     const [isAddFarmModalVisible, setIsAddFarmModalVisible] = useState(false);
     const theme = colorScheme === 'dark' ? Colors.dark : Colors.light;
@@ -110,7 +110,10 @@ export function Sidebar(props: DrawerContentComponentProps) {
             </ScrollView>
 
             <View style={styles.footer}>
-                <TouchableOpacity style={styles.logoutButton}>
+                <TouchableOpacity
+                    style={styles.logoutButton}
+                    onPress={() => signOut()}
+                >
                     <Text style={styles.logoutText}>Sign Out</Text>
                 </TouchableOpacity>
             </View>

@@ -10,12 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lesauf.verdant"
+      "bundleIdentifier": "com.lesauf.verdant",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.lesauf.verdant"
+      "package": "com.lesauf.verdant",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",

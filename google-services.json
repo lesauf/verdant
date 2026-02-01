@@ -12,7 +12,28 @@
           "package_name": "com.lesauf.verdant"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "77155287508-70u0p021fs7d4fl9o0m8carf1rshg3v0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lesauf.verdant",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "77155287508-io0bu1o5m8vbbn7l5dhd6ha6sur3451k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lesauf.verdant",
+            "certificate_hash": "ee86fb97f5f490a6790373c033c741cf14595ba8"
+          }
+        },
+        {
+          "client_id": "77155287508-l9iub27gd1uhrld2sk2bicgv103rojtn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBa0POD4ogrG6HeBb-0Di573h_d-OA-Mkc"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77155287508-l9iub27gd1uhrld2sk2bicgv103rojtn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "77155287508-1ebs396crjbk8nem131fhdarnvs3n7f6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.lesauf.verdant"
+              }
+            }
+          ]
         }
       }
     }
