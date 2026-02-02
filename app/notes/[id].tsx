@@ -6,12 +6,14 @@ import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NoteType, ShoppingItem } from "../../src/domain/entities/Note";
+import { useFarm } from "../../src/presentation/context/FarmContext";
 import { useNotesStore } from "../../src/presentation/stores/notesStore";
 
 export default function NoteDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { notes, addNote, updateNote, deleteNote } = useNotesStore();
+    const { currentFarm } = useFarm();
 
     const [title, setTitle] = useState("");
     const [type, setType] = useState<NoteType>('TEXT');
@@ -23,7 +25,7 @@ export default function NoteDetailScreen() {
         if (id === 'new') {
             setIsNew(true);
             setTitle("");
-            setType('TEXT'); // Default to text, maybe change logic
+            setType('TEXT');
             setContent("");
             setItems([]);
         } else {
@@ -32,13 +34,18 @@ export default function NoteDetailScreen() {
                 setIsNew(false);
                 setTitle(note.title);
                 setType(note.type);
-                setContent(note.content);
-                setItems(note.items);
+                setContent(note.content || "");
+                setItems(note.items || []);
             }
         }
     }, [id, notes]);
 
     const handleSave = async () => {
+        if (!currentFarm) {
+            Alert.alert("Error", "No farm selected");
+            return;
+        }
+
         if (!title.trim()) {
             Alert.alert("Error", "Please enter a title");
             return;
@@ -46,15 +53,14 @@ export default function NoteDetailScreen() {
 
         try {
             if (isNew) {
-                const newId = await addNote(title, type);
-                // Update the current note with content/items immediately
-                await updateNote(newId, {
+                const newId = await addNote(currentFarm.id, title, type);
+                await updateNote(currentFarm.id, newId, {
                     content: type === 'TEXT' ? content : undefined,
                     items: type === 'SHOPPING_LIST' ? items : undefined
                 });
                 router.replace(`/notes/${newId}` as any);
             } else {
-                await updateNote(id!, {
+                await updateNote(currentFarm.id, id!, {
                     title,
                     content: type === 'TEXT' ? content : undefined,
                     items: type === 'SHOPPING_LIST' ? items : undefined
@@ -62,7 +68,7 @@ export default function NoteDetailScreen() {
                 router.back();
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
             Alert.alert("Error", "Failed to save note");
         }
     };
@@ -74,14 +80,19 @@ export default function NoteDetailScreen() {
                 text: "Delete",
                 style: "destructive",
                 onPress: async () => {
-                    await deleteNote(id!);
-                    router.back();
+                    if (currentFarm) {
+                        try {
+                            await deleteNote(currentFarm.id, id!);
+                            router.back();
+                        } catch (error) {
+                            Alert.alert("Error", "Failed to delete note");
+                        }
+                    }
                 }
             }
         ]);
     };
 
-    // Shopping List Helpers
     const addItem = () => {
         const newItem: ShoppingItem = {
             id: Crypto.randomUUID(),
@@ -104,7 +115,6 @@ export default function NoteDetailScreen() {
         setItems(items.filter(i => i.id !== itemId));
     };
 
-    // Calculations
     const totalChecked = items.filter(i => i.checked).reduce((sum, i) => sum + (i.price || 0), 0);
     const totalUnchecked = items.filter(i => !i.checked).reduce((sum, i) => sum + (i.price || 0), 0);
     const grandTotal = totalChecked + totalUnchecked;
@@ -155,7 +165,7 @@ export default function NoteDetailScreen() {
                     />
                 ) : (
                     <View className="pb-10">
-                        {items.map((item, index) => (
+                        {items.map((item) => (
                             <View key={item.id} className="flex-row items-center mb-3 bg-white p-2 rounded-lg shadow-sm">
                                 <TouchableOpacity onPress={() => toggleItem(item.id)} className="mr-3">
                                     <View className={`w-6 h-6 rounded border-2 items-center justify-center ${item.checked ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'}`}>
@@ -198,7 +208,6 @@ export default function NoteDetailScreen() {
                             <Text className="text-gray-500 font-semibold ml-2">Add Item</Text>
                         </TouchableOpacity>
 
-                        {/* Totals Section */}
                         <View className="mt-8 bg-white p-4 rounded-xl shadow-sm">
                             <Text className="font-bold text-gray-900 mb-3">Price Summary</Text>
                             <View className="flex-row justify-between mb-2">

@@ -5,16 +5,19 @@ import React, { useEffect } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Note } from "../../src/domain/entities/Note";
+import { useFarm } from "../../src/presentation/context/FarmContext";
 import { useNotesStore } from "../../src/presentation/stores/notesStore";
-// Note: We'll implement a proper repository later, for now direct DB access for speed
 
 export default function NotesListScreen() {
     const router = useRouter();
     const { notes, loadNotes } = useNotesStore();
+    const { currentFarm } = useFarm();
 
     useEffect(() => {
-        loadNotes();
-    }, []);
+        if (currentFarm) {
+            loadNotes(currentFarm.id);
+        }
+    }, [currentFarm]);
 
     const renderNoteItem = ({ item }: { item: Note }) => (
         <TouchableOpacity
