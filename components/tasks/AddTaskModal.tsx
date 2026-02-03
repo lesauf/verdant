@@ -3,24 +3,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React from "react";
 import { Alert, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Task } from "../../src/domain/entities";
+import { Block, Task } from "../../src/domain/entities";
 import { useFarm } from "../../src/presentation/context/FarmContext";
 
 interface AddTaskModalProps {
     visible: boolean;
-    blockId: string;
-    blockName: string;
+    blockId?: string;
+    blockName?: string;
+    blocks?: Block[]; // Optional: if provided, allows selecting a block
     onClose: () => void;
     onAdd: (task: Omit<Task, 'id' | 'createdAt'>) => void;
 }
 
-export default function AddTaskModal({ visible, blockId, blockName, onClose, onAdd }: AddTaskModalProps) {
+export default function AddTaskModal({ visible, blockId, blockName, blocks, onClose, onAdd }: AddTaskModalProps) {
     const { members } = useFarm();
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [startDate, setStartDate] = React.useState<Date | null>(null);
     const [dueDate, setDueDate] = React.useState<Date | null>(null);
     const [assignedTo, setAssignedTo] = React.useState<string | null>(null);
+    const [selectedBlockId, setSelectedBlockId] = React.useState<string | null>(blockId || null);
     const [showStartDatePicker, setShowStartDatePicker] = React.useState(false);
     const [showDueDatePicker, setShowDueDatePicker] = React.useState(false);
 
@@ -30,11 +32,13 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
         setStartDate(null);
         setDueDate(null);
         setAssignedTo(null);
+        setSelectedBlockId(blockId || null);
     };
 
     React.useEffect(() => {
         if (!visible) resetForm();
-    }, [visible]);
+        else setSelectedBlockId(blockId || null);
+    }, [visible, blockId]);
 
     const handleAdd = () => {
         if (!title) {
@@ -46,7 +50,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
             title,
             description: description,
             status: "Todo",
-            blockId,
+            blockId: selectedBlockId || undefined,
             assignedTo: assignedTo,
             startDate: startDate,
             dueDate: dueDate,
@@ -62,12 +66,6 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
         return date.toLocaleDateString();
     };
 
-    const getAssignedMemberName = () => {
-        if (!assignedTo) return "Unassigned";
-        const member = members.find(m => m.userId === assignedTo);
-        return member?.displayName || "Unknown Member";
-    };
-
     return (
         <Modal
             animationType="slide"
@@ -78,7 +76,9 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
             <View className="flex-1 justify-end bg-black/50">
                 <View className="bg-white rounded-t-3xl p-6 h-[85%]">
                     <View className="flex-row justify-between items-center mb-6">
-                        <Text className="text-xl font-bold text-gray-900">New Task for {blockName}</Text>
+                        <Text className="text-xl font-bold text-gray-900">
+                            {blockName ? `New Task for ${blockName}` : "New Task"}
+                        </Text>
                         <TouchableOpacity onPress={onClose}>
                             <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
                         </TouchableOpacity>
@@ -99,8 +99,8 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                                 <TouchableOpacity
                                     onPress={() => setAssignedTo(null)}
                                     className={`mr-3 px-4 py-2 rounded-full border ${assignedTo === null
-                                            ? 'bg-gray-800 border-gray-800'
-                                            : 'bg-white border-gray-300'
+                                        ? 'bg-gray-800 border-gray-800'
+                                        : 'bg-white border-gray-300'
                                         }`}
                                 >
                                     <Text className={assignedTo === null ? 'text-white' : 'text-gray-700'}>Unassigned</Text>
@@ -110,8 +110,8 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                                         key={member.userId}
                                         onPress={() => setAssignedTo(member.userId)}
                                         className={`mr-3 px-4 py-2 rounded-full border ${assignedTo === member.userId
-                                                ? 'bg-emerald-600 border-emerald-600'
-                                                : 'bg-white border-gray-300'
+                                            ? 'bg-emerald-600 border-emerald-600'
+                                            : 'bg-white border-gray-300'
                                             }`}
                                     >
                                         <Text className={assignedTo === member.userId ? 'text-white' : 'text-gray-700'}>
@@ -132,6 +132,34 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                             numberOfLines={3}
                             textAlignVertical="top"
                         />
+
+                        {/* Block Selector - Only if blocks prop provided */}
+                        {blocks && (
+                            <>
+                                <Text className="text-gray-700 font-semibold mb-2">Assign to Block (Optional)</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
+                                    <TouchableOpacity
+                                        className={`mr-2 px-4 py-2 rounded-full ${!selectedBlockId ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                                        onPress={() => setSelectedBlockId(null)}
+                                    >
+                                        <Text className={!selectedBlockId ? 'text-white font-semibold' : 'text-gray-700'}>
+                                            No Block
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {blocks.map((block) => (
+                                        <TouchableOpacity
+                                            key={block.id}
+                                            className={`mr-2 px-4 py-2 rounded-full ${selectedBlockId === block.id ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                                            onPress={() => setSelectedBlockId(block.id)}
+                                        >
+                                            <Text className={selectedBlockId === block.id ? 'text-white font-semibold' : 'text-gray-700'}>
+                                                {block.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </>
+                        )}
 
                         <Text className="text-gray-700 font-semibold mb-2">Start Date (Optional)</Text>
                         <TouchableOpacity

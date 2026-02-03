@@ -1,14 +1,13 @@
-import { faPlus, faTasks, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTasks } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { format, isSameDay } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, FlatList, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 import CalendarView from "../../../components/schedule/CalendarView";
 import DateNavigation from "../../../components/schedule/DateNavigation";
 import GanttView from "../../../components/schedule/GanttView";
 import ScheduleFilters from "../../../components/schedule/ScheduleFilters";
+import AddTaskModal from "../../../components/tasks/AddTaskModal";
 import TaskItem from "../../../components/tasks/TaskItem";
 import ViewTaskModal from "../../../components/tasks/ViewTaskModal";
 import { useFarm } from "../../../src/presentation/context/FarmContext";
@@ -86,68 +85,22 @@ export default function TasksScreen() {
 
     // Add task modal state
     const [isModalVisible, setModalVisible] = useState(false);
-    const [newTaskTitle, setNewTaskTitle] = useState("");
-    const [newTaskDescription, setNewTaskDescription] = useState("");
-    const [selectedBlockIdForNewTask, setSelectedBlockIdForNewTask] = useState<string | null>(null);
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [dueDate, setDueDate] = useState<Date | null>(null);
-    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-    const [showDueDatePicker, setShowDueDatePicker] = useState(false);
 
     // View Modal State (for Gantt/Calendar interaction)
     const [selectedTaskForView, setSelectedTaskForView] = useState<any | null>(null);
 
-    const handleAddTask = async () => {
-        if (!currentFarm) {
-            Alert.alert("Error", "No farm selected");
-            return;
-        }
-
-        if (!newTaskTitle) {
-            Alert.alert("Error", "Please enter a task title");
-            return;
-        }
+    const handleAddTask = async (taskData: any) => {
+        if (!currentFarm) return;
 
         try {
             await createTask(currentFarm.id, {
-                title: newTaskTitle,
-                description: newTaskDescription || undefined,
-                status: "Todo",
-                blockId: selectedBlockIdForNewTask || undefined,
-                startDate: startDate || undefined,
-                dueDate: dueDate || undefined,
+                ...taskData,
                 farmId: currentFarm.id,
             });
-
-            // Reset form
             setModalVisible(false);
-            setNewTaskTitle("");
-            setNewTaskDescription("");
-            setSelectedBlockIdForNewTask(null);
-            setStartDate(null);
-            setDueDate(null);
         } catch (error) {
             Alert.alert("Error", error instanceof Error ? error.message : "Failed to create task");
         }
-    };
-
-    const handleStartDateChange = (_: any, selectedDate?: Date) => {
-        setShowStartDatePicker(false);
-        if (selectedDate) {
-            setStartDate(selectedDate);
-        }
-    };
-
-    const handleDueDateChange = (_: any, selectedDate?: Date) => {
-        setShowDueDatePicker(false);
-        if (selectedDate) {
-            setDueDate(selectedDate);
-        }
-    };
-
-    const formatDate = (date: Date | null) => {
-        if (!date) return "Not set";
-        return date.toLocaleDateString();
     };
 
     const renderTaskList = (data: any[], header?: React.ReactElement) => (
@@ -244,105 +197,13 @@ export default function TasksScreen() {
             </TouchableOpacity>
 
             {/* Add Task Modal */}
-            <Modal
-                animationType="slide"
-                transparent={true}
+            <AddTaskModal
                 visible={isModalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                <View className="flex-1 justify-end bg-black/50">
-                    <ScrollView className="bg-white rounded-t-3xl p-6" bounces={false}>
-                        <View className="flex-row justify-between items-center mb-6">
-                            <Text className="text-xl font-bold text-gray-900">New Task</Text>
-                            <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <FontAwesomeIcon icon={faTimes} size={20} color="#9ca3af" />
-                            </TouchableOpacity>
-                        </View>
+                blocks={blocks}
+                onClose={() => setModalVisible(false)}
+                onAdd={handleAddTask}
+            />
 
-                        <Text className="text-gray-700 font-semibold mb-2">Task Title</Text>
-                        <TextInput
-                            className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
-                            placeholder="e.g. Plant tomatoes"
-                            value={newTaskTitle}
-                            onChangeText={setNewTaskTitle}
-                        />
-
-                        <Text className="text-gray-700 font-semibold mb-2">Description (Optional)</Text>
-                        <TextInput
-                            className="bg-gray-100 p-4 rounded-xl mb-4 text-gray-900"
-                            placeholder="Add details about this task..."
-                            value={newTaskDescription}
-                            onChangeText={setNewTaskDescription}
-                            multiline
-                            numberOfLines={3}
-                        />
-
-                        <Text className="text-gray-700 font-semibold mb-2">Assign to Block (Optional)</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4">
-                            <TouchableOpacity
-                                className={`mr-2 px-4 py-2 rounded-full ${!selectedBlockIdForNewTask ? 'bg-emerald-500' : 'bg-gray-200'}`}
-                                onPress={() => setSelectedBlockIdForNewTask(null)}
-                            >
-                                <Text className={!selectedBlockIdForNewTask ? 'text-white font-semibold' : 'text-gray-700'}>
-                                    No Block
-                                </Text>
-                            </TouchableOpacity>
-                            {blocks.map((block) => (
-                                <TouchableOpacity
-                                    key={block.id}
-                                    className={`mr-2 px-4 py-2 rounded-full ${selectedBlockIdForNewTask === block.id ? 'bg-emerald-500' : 'bg-gray-200'}`}
-                                    onPress={() => setSelectedBlockIdForNewTask(block.id)}
-                                >
-                                    <Text className={selectedBlockIdForNewTask === block.id ? 'text-white font-semibold' : 'text-gray-700'}>
-                                        {block.name}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-
-                        <Text className="text-gray-700 font-semibold mb-2">Start Date (Optional)</Text>
-                        <TouchableOpacity
-                            className="bg-gray-100 p-4 rounded-xl mb-4"
-                            onPress={() => setShowStartDatePicker(true)}
-                        >
-                            <Text className="text-gray-900">{formatDate(startDate)}</Text>
-                        </TouchableOpacity>
-
-                        <Text className="text-gray-700 font-semibold mb-2">Due Date (Optional)</Text>
-                        <TouchableOpacity
-                            className="bg-gray-100 p-4 rounded-xl mb-6"
-                            onPress={() => setShowDueDatePicker(true)}
-                        >
-                            <Text className="text-gray-900">{formatDate(dueDate)}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            className="bg-emerald-500 p-4 rounded-xl items-center"
-                            onPress={handleAddTask}
-                        >
-                            <Text className="text-white font-bold text-lg">Create Task</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-            </Modal>
-
-            {showStartDatePicker && (
-                <DateTimePicker
-                    value={startDate || new Date()}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={handleStartDateChange}
-                />
-            )}
-
-            {showDueDatePicker && (
-                <DateTimePicker
-                    value={dueDate || new Date()}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={handleDueDateChange}
-                />
-            )}
             {/* View Task Modal (for Gantt) */}
             {selectedTaskForView && (
                 <ViewTaskModal
