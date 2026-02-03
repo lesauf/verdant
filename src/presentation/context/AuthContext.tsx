@@ -1,10 +1,10 @@
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signOut, User } from '@react-native-firebase/auth';
+import { FirebaseAuthTypes, getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signOut } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getContainer } from '../../infrastructure/di/container';
 
 interface AuthContextData {
-    user: User | null;
+    user: FirebaseAuthTypes.User | null;
     isLoading: boolean;
     signInWithGoogle: () => Promise<void>;
     signOut: () => Promise<void>;
@@ -13,7 +13,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

@@ -11,7 +11,7 @@ import { useFarm } from '../../src/presentation/context/FarmContext';
 
 export default function InviteMemberScreen() {
     const router = useRouter();
-    const { currentFarm } = useFarm();
+    const { currentFarm, selectFarm } = useFarm();
     const { user } = useAuth();
 
     const [email, setEmail] = useState('');
@@ -20,10 +20,7 @@ export default function InviteMemberScreen() {
     const [loading, setLoading] = useState(false);
 
     const handleInvite = async () => {
-        if (!email.trim() || !email.includes('@')) {
-            Alert.alert('Invalid Email', 'Please enter a valid email address.');
-            return;
-        }
+        // ... (validation)
 
         if (!currentFarm || !user) {
             Alert.alert('Error', 'Session error. Please try again.');
@@ -41,6 +38,9 @@ export default function InviteMemberScreen() {
                 role: role,
                 invitedByUserId: user.uid
             });
+
+            // Refresh members by re-selecting the farm
+            await selectFarm(currentFarm.id);
 
             Alert.alert('Success', `Invitation sent to ${email}`, [
                 { text: 'OK', onPress: () => router.back() }
@@ -89,8 +89,8 @@ export default function InviteMemberScreen() {
                                 key={r}
                                 onPress={() => setRole(r)}
                                 className={`flex-1 items-center justify-center py-3 rounded-xl border ${role === r
-                                        ? 'bg-emerald-50 border-emerald-500'
-                                        : 'bg-gray-50 border-gray-200'
+                                    ? 'bg-emerald-50 border-emerald-500'
+                                    : 'bg-gray-50 border-gray-200'
                                     }`}
                             >
                                 <Text className={`capitalize font-medium ${role === r ? 'text-emerald-700' : 'text-gray-600'

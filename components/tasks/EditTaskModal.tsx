@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import React from "react";
 import { Alert, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Block, Task } from "../../src/domain/entities";
+import { useFarm } from "../../src/presentation/context/FarmContext";
 
 interface EditTaskModalProps {
     visible: boolean;
@@ -14,9 +15,11 @@ interface EditTaskModalProps {
 }
 
 export default function EditTaskModal({ visible, task, blocks, onClose, onSave }: EditTaskModalProps) {
+    const { members } = useFarm();
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [blockId, setBlockId] = React.useState<string | null>(null);
+    const [assignedTo, setAssignedTo] = React.useState<string | null>(null);
     const [startDate, setStartDate] = React.useState<Date | null>(null);
     const [dueDate, setDueDate] = React.useState<Date | null>(null);
     const [showStartDatePicker, setShowStartDatePicker] = React.useState(false);
@@ -27,6 +30,7 @@ export default function EditTaskModal({ visible, task, blocks, onClose, onSave }
             setTitle(task.title);
             setDescription(task.description || "");
             setBlockId(task.blockId || null);
+            setAssignedTo(task.assignedTo || null);
             setStartDate(task.startDate ? new Date(task.startDate) : null);
             setDueDate(task.dueDate ? new Date(task.dueDate) : null);
         }
@@ -41,6 +45,7 @@ export default function EditTaskModal({ visible, task, blocks, onClose, onSave }
         const updates: Partial<Task> = {
             title,
             description: description || undefined,
+            assignedTo: assignedTo || null,
             startDate: startDate || undefined,
             dueDate: dueDate || undefined,
         };
@@ -85,6 +90,35 @@ export default function EditTaskModal({ visible, task, blocks, onClose, onSave }
                             value={title}
                             onChangeText={setTitle}
                         />
+
+                        <Text className="text-gray-700 font-semibold mb-2">Assign To</Text>
+                        <View className="mb-4">
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row pb-2">
+                                <TouchableOpacity
+                                    onPress={() => setAssignedTo(null)}
+                                    className={`mr-3 px-4 py-2 rounded-full border ${assignedTo === null
+                                        ? 'bg-gray-800 border-gray-800'
+                                        : 'bg-white border-gray-300'
+                                        }`}
+                                >
+                                    <Text className={assignedTo === null ? 'text-white' : 'text-gray-700'}>Unassigned</Text>
+                                </TouchableOpacity>
+                                {members.map(member => (
+                                    <TouchableOpacity
+                                        key={member.userId}
+                                        onPress={() => setAssignedTo(member.userId)}
+                                        className={`mr-3 px-4 py-2 rounded-full border ${assignedTo === member.userId
+                                            ? 'bg-emerald-600 border-emerald-600'
+                                            : 'bg-white border-gray-300'
+                                            }`}
+                                    >
+                                        <Text className={assignedTo === member.userId ? 'text-white' : 'text-gray-700'}>
+                                            {member.displayName || 'Member'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
 
                         <Text className="text-gray-700 font-semibold mb-2">Description (Optional)</Text>
                         <TextInput
