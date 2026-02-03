@@ -1,9 +1,10 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithCredential, signOut, User } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getContainer } from '../../infrastructure/di/container';
 
 interface AuthContextData {
-    user: FirebaseAuthTypes.User | null;
+    user: User | null;
     isLoading: boolean;
     signInWithGoogle: () => Promise<void>;
     signOut: () => Promise<void>;
@@ -12,7 +13,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -22,7 +23,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             offlineAccess: true,
         });
 
-        const subscriber = auth().onAuthStateChanged((user) => {
+        const auth = getAuth();
+        const subscriber = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Sync user to Firestore
+                try {
+                    const container = getContainer();
+                    const syncUserUseCase = container.resolve('syncUserUseCase');
+                    const userEntity = {
+                        id: user.uid,
+                        email: user.email || '',
+                        displayName: user.displayName || '',
+                        photoURL: user.photoURL || undefined,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    };
+
+                    await syncUserUseCase.execute(userEntity);
+
+                    // Check for and claim any pending invites
+                    const claimMemberAccessUseCase = container.resolve('claimMemberAccessUseCase');
+                    await claimMemberAccessUseCase.execute(userEntity);
+
+                } catch (error) {
+                    console.error('Failed to sync user profile or claim access:', error);
+                }
+            }
             setUser(user);
             setIsLoading(false);
         });
@@ -40,8 +66,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 throw new Error('No ID token found');
             }
 
-            const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-            await auth().signInWithCredential(googleCredential);
+            const googleCredential = GoogleAuthProvider.credential(idToken);
+            const auth = getAuth();
+            await signInWithCredential(auth, googleCredential);
+            // onAuthStateChanged will handle the sync
         } catch (error) {
             console.log('Google Sign-In Error:');
             console.error(error);
@@ -51,11 +79,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const signOut = async () => {
+    const signOutUser = async () => {
         try {
             setIsLoading(true);
             await GoogleSignin.signOut();
-            await auth().signOut();
+            const auth = getAuth();
+            await signOut(auth);
         } catch (error) {
             console.error('Sign-Out Error:', error);
         } finally {
@@ -64,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, signInWithGoogle, signOut }}>
+        <AuthContext.Provider value={{ user, isLoading, signInWithGoogle, signOut: signOutUser }}>
             {children}
         </AuthContext.Provider>
     );

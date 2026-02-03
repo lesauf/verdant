@@ -1,4 +1,4 @@
-import firestore, { collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from '@react-native-firebase/firestore';
+import { collection, collectionGroup, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from '@react-native-firebase/firestore';
 import { Farm, FarmMember } from '../../../domain/entities/Farm';
 import { firebaseDb } from '../../../infrastructure/config/firebase';
 import { AppError } from '../../../infrastructure/errors/AppError';
@@ -20,7 +20,7 @@ export class FarmRepository {
       
       // 1. Find farms where user is a member using collectionGroup
       const membersQuery = query(
-        firestore().collectionGroup('members') as any,
+        collectionGroup(firebaseDb, 'members'),
         where('userId', '==', userId)
       );
       
@@ -41,7 +41,7 @@ export class FarmRepository {
       // 2. Fetch the actual farm documents
       // Note: Firestore 'where in' is limited to 10-30 IDs usually.
       // For now we fetch them individually or in batches if needed.
-      const farmPromises = farmIds.map(id => this.findById(id));
+      const farmPromises = farmIds.map((id: string) => this.findById(id));
       const farms = await Promise.all(farmPromises);
       
       const activeFarms = farms.filter((f: Farm | null): f is Farm => f !== null);
@@ -100,7 +100,9 @@ export class FarmRepository {
         userId: farm.ownerId,
         role: 'owner',
         permissions: ['all'],
-        joinedAt: new Date()
+        joinedAt: new Date(),
+        status: 'active',
+        displayName: 'Owner' // Ideally this should be the user's name
       }));
 
       console.log('FarmRepository: Farm saved successfully');

@@ -179,7 +179,7 @@ export function Sidebar(props: DrawerContentComponentProps) {
 
                 {!isAssetsCollapsed && (
                     <View style={styles.sectionContent}>
-                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/personnel')}>
+                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/team?view=assignments')}>
                             <IconSymbol name="person.2" size={20} color={secondaryTextColor} />
                             <Text style={[styles.navItemText, { color: textColor }]}>Personnel</Text>
                         </TouchableOpacity>
@@ -220,7 +220,7 @@ export function Sidebar(props: DrawerContentComponentProps) {
                             <IconSymbol name="note.text" size={20} color={secondaryTextColor} />
                             <Text style={[styles.navItemText, { color: textColor }]}>Notes</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/members')}>
+                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/team?view=access')}>
                             <IconSymbol name="person.fill" size={20} color={secondaryTextColor} />
                             <Text style={[styles.navItemText, { color: textColor }]}>Members</Text>
                         </TouchableOpacity>

@@ -1,11 +1,12 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { CheckPermissionUseCase, CreateFarmUseCase, GetFarmByIdUseCase, GetFarmsForUserUseCase } from '../../application/usecases/farms';
-import { Farm, FarmRole } from '../../domain/entities/Farm';
+import { Farm, FarmMember, FarmRole } from '../../domain/entities/Farm';
 import { useAuth } from './AuthContext';
 
 interface FarmContextData {
     currentFarm: Farm | null;
     availableFarms: Farm[];
+    members: FarmMember[]; // Added members list
     userRole: FarmRole | null;
     isLoading: boolean;
     isInitialLoad: boolean;
@@ -28,6 +29,7 @@ export const FarmProvider: React.FC<{
     const { user } = useAuth();
     const [currentFarm, setCurrentFarm] = useState<Farm | null>(null);
     const [availableFarms, setAvailableFarms] = useState<Farm[]>([]);
+    const [members, setMembers] = useState<FarmMember[]>([]); // Added members state
     const [userRole, setUserRole] = useState<FarmRole | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -67,17 +69,13 @@ export const FarmProvider: React.FC<{
             // If no farm selected but we have farms, select the first one by default
             if (!currentFarm && farms.length > 0) {
                 const firstFarm = farms[0];
-                setCurrentFarm(firstFarm);
-
-                // Fetch role for the default farm
-                const members = await checkPermissionUseCase['farmRepository'].getMembers(firstFarm.id);
-                const member = members.find(m => m.userId === user.uid);
-                if (member) setUserRole(member.role);
+                selectFarm(firstFarm.id);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to fetch farms');
+            setIsLoading(false); // Ensure loading stops on error
         } finally {
-            setIsLoading(false);
+            if (!currentFarm) setIsLoading(false); // Only stop loading if we didn't call selectFarm
             setIsInitialLoad(false);
         }
     }, [user, currentFarm, getFarmsForUserUseCase]);
@@ -89,9 +87,11 @@ export const FarmProvider: React.FC<{
             const farm = await getFarmByIdUseCase.execute(farmId);
             if (farm) {
                 setCurrentFarm(farm);
-                // Fetch role for the selected farm
-                const members = await checkPermissionUseCase['farmRepository'].getMembers(farm.id);
-                const member = members.find(m => m.userId === user.uid);
+                // Fetch members and role for the selected farm
+                const farmMembers = await checkPermissionUseCase['farmRepository'].getMembers(farm.id);
+                setMembers(farmMembers); // Set members
+
+                const member = farmMembers.find(m => m.userId === user.uid);
                 if (member) setUserRole(member.role);
             } else {
                 throw new Error('Farm not found');
@@ -118,6 +118,7 @@ export const FarmProvider: React.FC<{
             value={{
                 currentFarm,
                 availableFarms,
+                members,
                 userRole,
                 isLoading,
                 isInitialLoad,

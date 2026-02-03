@@ -9,6 +9,9 @@ export interface FarmMemberFirestoreModel {
   role: string;
   permissions: string[];
   joinedAt: Timestamp;
+  inviteEmail?: string;
+  displayName?: string;
+  status?: string; // 'active' | 'pending'
 }
 
 /**
@@ -24,6 +27,9 @@ export const farmMemberMapper = {
       role: data.role as FarmRole,
       permissions: data.permissions || [],
       joinedAt: data.joinedAt.toDate(),
+      inviteEmail: data.inviteEmail,
+      displayName: data.displayName,
+      status: (data.status as 'active' | 'pending') || 'active', // Default to active for backward compatibility
     };
   },
 
@@ -36,6 +42,9 @@ export const farmMemberMapper = {
       role: domain.role,
       permissions: domain.permissions,
       joinedAt: Timestamp.fromDate(domain.joinedAt),
+      inviteEmail: domain.inviteEmail,
+      displayName: domain.displayName,
+      status: domain.status,
     };
   },
 };

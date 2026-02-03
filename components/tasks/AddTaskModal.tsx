@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import React from "react";
 import { Alert, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Task } from "../../src/domain/entities";
+import { useFarm } from "../../src/presentation/context/FarmContext";
 
 interface AddTaskModalProps {
     visible: boolean;
@@ -14,10 +15,12 @@ interface AddTaskModalProps {
 }
 
 export default function AddTaskModal({ visible, blockId, blockName, onClose, onAdd }: AddTaskModalProps) {
+    const { members } = useFarm();
     const [title, setTitle] = React.useState("");
     const [description, setDescription] = React.useState("");
     const [startDate, setStartDate] = React.useState<Date | null>(null);
     const [dueDate, setDueDate] = React.useState<Date | null>(null);
+    const [assignedTo, setAssignedTo] = React.useState<string | null>(null);
     const [showStartDatePicker, setShowStartDatePicker] = React.useState(false);
     const [showDueDatePicker, setShowDueDatePicker] = React.useState(false);
 
@@ -26,6 +29,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
         setDescription("");
         setStartDate(null);
         setDueDate(null);
+        setAssignedTo(null);
     };
 
     React.useEffect(() => {
@@ -43,7 +47,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
             description: description,
             status: "Todo",
             blockId,
-            assignedTo: null,
+            assignedTo: assignedTo,
             startDate: startDate,
             dueDate: dueDate,
             updatedAt: undefined,
@@ -58,6 +62,12 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
         return date.toLocaleDateString();
     };
 
+    const getAssignedMemberName = () => {
+        if (!assignedTo) return "Unassigned";
+        const member = members.find(m => m.userId === assignedTo);
+        return member?.displayName || "Unknown Member";
+    };
+
     return (
         <Modal
             animationType="slide"
@@ -66,7 +76,7 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
             onRequestClose={onClose}
         >
             <View className="flex-1 justify-end bg-black/50">
-                <View className="bg-white rounded-t-3xl p-6 h-[75%]">
+                <View className="bg-white rounded-t-3xl p-6 h-[85%]">
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className="text-xl font-bold text-gray-900">New Task for {blockName}</Text>
                         <TouchableOpacity onPress={onClose}>
@@ -82,6 +92,35 @@ export default function AddTaskModal({ visible, blockId, blockName, onClose, onA
                             value={title}
                             onChangeText={setTitle}
                         />
+
+                        <Text className="text-gray-700 font-semibold mb-2">Assign To</Text>
+                        <View className="mb-4">
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row pb-2">
+                                <TouchableOpacity
+                                    onPress={() => setAssignedTo(null)}
+                                    className={`mr-3 px-4 py-2 rounded-full border ${assignedTo === null
+                                            ? 'bg-gray-800 border-gray-800'
+                                            : 'bg-white border-gray-300'
+                                        }`}
+                                >
+                                    <Text className={assignedTo === null ? 'text-white' : 'text-gray-700'}>Unassigned</Text>
+                                </TouchableOpacity>
+                                {members.map(member => (
+                                    <TouchableOpacity
+                                        key={member.userId}
+                                        onPress={() => setAssignedTo(member.userId)}
+                                        className={`mr-3 px-4 py-2 rounded-full border ${assignedTo === member.userId
+                                                ? 'bg-emerald-600 border-emerald-600'
+                                                : 'bg-white border-gray-300'
+                                            }`}
+                                    >
+                                        <Text className={assignedTo === member.userId ? 'text-white' : 'text-gray-700'}>
+                                            {member.displayName || 'Member'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                        </View>
 
                         <Text className="text-gray-700 font-semibold mb-2">Description (Optional)</Text>
                         <TextInput

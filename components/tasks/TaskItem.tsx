@@ -1,8 +1,9 @@
-import { faCalendar, faCheck, faEdit, faMapMarkerAlt, faPlayCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar, faCheck, faEdit, faMapMarkerAlt, faPlayCircle, faTrash, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import React, { useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { Task } from "../../src/domain/entities/Task";
+import { useFarm } from "../../src/presentation/context/FarmContext";
 import { useBlockStore } from "../../src/presentation/stores/blockStore";
 import EditTaskModal from "./EditTaskModal";
 import ViewTaskModal from "./ViewTaskModal";
@@ -25,11 +26,16 @@ export default function TaskItem({
     showBlockSelector = true
 }: TaskItemProps) {
     const { blocks } = useBlockStore();
+    const { members } = useFarm();
     const [showDescription, setShowDescription] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
     const blockName = blocks.find(b => b.id === task.blockId)?.name;
     const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "Done";
+
+    // Resolve assigned member name
+    const assignedMember = task.assignedTo ? members.find(m => m.userId === task.assignedTo) : null;
+    const assignedName = assignedMember?.displayName || (task.assignedTo ? "Unknown" : null);
 
     const formatDate = (date: Date | null | undefined) => {
         if (!date) return null;
@@ -80,6 +86,12 @@ export default function TaskItem({
                         </TouchableOpacity>
 
                         <View className="flex-row items-center mt-1 flex-wrap gap-2">
+                            {assignedName && (
+                                <View className="flex-row items-center bg-gray-100 px-1.5 py-0.5 rounded">
+                                    <FontAwesomeIcon icon={faUser} size={10} color="#6b7280" />
+                                    <Text className="text-gray-600 text-xs ml-1 font-medium">{assignedName}</Text>
+                                </View>
+                            )}
                             {blockName && (
                                 <View className="flex-row items-center">
                                     <FontAwesomeIcon icon={faMapMarkerAlt} size={10} color="#6b7280" />

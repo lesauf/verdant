@@ -1,10 +1,14 @@
 export type FarmRole = 'owner' | 'manager' | 'worker';
 
 export interface FarmMember {
-  userId: string;
+  userId: string; // Real UID or Shadow ID
   role: FarmRole;
   permissions: string[];
   joinedAt: Date;
+  // Shadow Member fields
+  inviteEmail?: string;
+  displayName?: string;
+  status: 'active' | 'pending';
 }
 
 export interface FarmGeolocation {
