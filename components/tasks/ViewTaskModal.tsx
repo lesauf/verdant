@@ -1,7 +1,7 @@
-import { faCalendar, faCamera, faCheckCircle, faMapMarkerAlt, faPlayCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar, faCamera, faCheckCircle, faMapMarkerAlt, faPlayCircle, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import * as ImagePicker from 'expo-image-picker';
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { Task } from "../../src/domain/entities/Task";
 import { useAttachmentsStore } from "../../src/presentation/stores/attachmentsStore";
@@ -15,10 +15,12 @@ interface ViewTaskModalProps {
 
 export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalProps) {
     const { blocks } = useBlockStore();
-    const { attachments, loadAttachments, addAttachment } = useAttachmentsStore();
+    const { attachments, loadAttachments, addAttachment, deleteAttachment } = useAttachmentsStore();
     const blockName = blocks.find(b => b.id === task.blockId)?.name;
     const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "Done";
     const taskAttachments = attachments[task.id] || [];
+
+    const [fullScreenImage, setFullScreenImage] = useState<{ uri: string, id: string } | null>(null);
 
     useEffect(() => {
         if (visible) {
@@ -28,7 +30,7 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
 
     const handleAddImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             quality: 0.7,
         });
@@ -50,6 +52,26 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                 await addAttachment(task.id, result.assets[0].uri);
             }
         }
+    };
+
+    const handleDeleteAttachment = async (id: string, uri: string) => {
+        Alert.alert(
+            "Delete Attachment",
+            "Are you sure you want to delete this attachment?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        await deleteAttachment(id, uri, task.id);
+                        if (fullScreenImage?.id === id) {
+                            setFullScreenImage(null);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const formatDate = (date: Date | null | undefined) => {
@@ -135,11 +157,22 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
                                 {taskAttachments.map((att) => (
                                     <View key={att.id} className="mr-3 relative">
-                                        <Image
-                                            source={{ uri: att.uri }}
-                                            className="w-24 h-24 rounded-lg bg-gray-100"
-                                            resizeMode="cover"
-                                        />
+                                        <TouchableOpacity
+                                            onPress={() => setFullScreenImage({ uri: att.uri, id: att.id })}
+                                            activeOpacity={0.8}
+                                        >
+                                            <Image
+                                                source={{ uri: att.uri }}
+                                                className="w-24 h-24 rounded-lg bg-gray-100"
+                                                resizeMode="cover"
+                                            />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            className="absolute top-1 right-1 bg-black/50 p-1.5 rounded-full"
+                                            onPress={() => handleDeleteAttachment(att.id, att.uri)}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} size={10} color="white" />
+                                        </TouchableOpacity>
                                     </View>
                                 ))}
                                 <TouchableOpacity
@@ -167,6 +200,39 @@ export default function ViewTaskModal({ visible, task, onClose }: ViewTaskModalP
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
+
+            {/* Full Screen Image Modal */}
+            <Modal
+                visible={!!fullScreenImage}
+                transparent={true}
+                onRequestClose={() => setFullScreenImage(null)}
+                animationType="fade"
+            >
+                <View className="flex-1 bg-black justify-center items-center relative">
+                    <TouchableOpacity
+                        className="absolute top-12 right-6 z-10 bg-black/40 p-2 rounded-full"
+                        onPress={() => setFullScreenImage(null)}
+                    >
+                        <FontAwesomeIcon icon={faTimes} size={24} color="white" />
+                    </TouchableOpacity>
+
+                    {fullScreenImage && (
+                        <>
+                            <Image
+                                source={{ uri: fullScreenImage.uri }}
+                                style={{ width: '100%', height: '80%' }}
+                                resizeMode="contain"
+                            />
+                            <TouchableOpacity
+                                className="absolute bottom-12 right-6 bg-red-500/80 p-4 rounded-full"
+                                onPress={() => handleDeleteAttachment(fullScreenImage.id, fullScreenImage.uri)}
+                            >
+                                <FontAwesomeIcon icon={faTrash} size={24} color="white" />
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </View>
+            </Modal>
         </Modal>
     );
 }

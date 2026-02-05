@@ -1,16 +1,14 @@
 import { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { LayoutAnimation, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, UIManager, useColorScheme, View } from 'react-native';
+import { LayoutAnimation, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { Colors } from '../../constants/theme';
 import { useAuth } from '../../src/presentation/context/AuthContext';
 import { useFarm } from '../../src/presentation/context/FarmContext';
 import { AddFarmModal } from '../farms/AddFarmModal';
 import { IconSymbol } from '../ui/icon-symbol';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+
 
 export function Sidebar(props: DrawerContentComponentProps) {
     const colorScheme = useColorScheme();

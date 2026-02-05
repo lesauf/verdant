@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
-import * as FileSystem from "expo-file-system/legacy";
 import { create } from "zustand";
 import { AttachmentRepository } from "../../data/repositories/firebase/AttachmentRepository";
+import { firebaseStorage } from "../../infrastructure/config/firebase";
 
 const attachmentRepo = new AttachmentRepository();
 
@@ -19,7 +19,7 @@ interface AttachmentsState {
     error: string | null;
     loadAttachments: (taskId: string) => Promise<void>;
     addAttachment: (taskId: string, originalUri: string) => Promise<void>;
-    deleteAttachment: (id: string, uri: string) => Promise<void>;
+    deleteAttachment: (id: string, uri: string, taskId: string) => Promise<void>;
 }
 
 export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
@@ -53,28 +53,22 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
     addAttachment: async (taskId: string, originalUri: string) => {
         const id = Crypto.randomUUID();
         const filename = `${id}.jpg`;
-        const permanentDir = `${FileSystem.documentDirectory}attachments/`;
-        const permanentUri = `${permanentDir}${filename}`;
 
         try {
-            // Ensure directory exists
-            const dirInfo = await FileSystem.getInfoAsync(permanentDir);
-            if (!dirInfo.exists) {
-                await FileSystem.makeDirectoryAsync(permanentDir, { intermediates: true });
-            }
+            // Upload to Firebase Storage using RNFirebase API
+            const storageRef = firebaseStorage.ref(`attachments/${taskId}/${filename}`);
+            
+            // Use putFile for native file upload (better performance than Blob)
+            await storageRef.putFile(originalUri);
+            
+            const downloadUrl = await storageRef.getDownloadURL();
 
-            // Copy file
-            await FileSystem.copyAsync({
-                from: originalUri,
-                to: permanentUri
-            });
-
-            // Save to Firebase
+            // Save to Firestore with download URL
             await attachmentRepo.save({
                 id,
                 taskId,
                 type: 'IMAGE',
-                uri: permanentUri,
+                uri: downloadUrl,
                 createdAt: new Date()
             });
 
@@ -87,17 +81,28 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
         }
     },
 
-    deleteAttachment: async (id: string, uri: string) => {
+    deleteAttachment: async (id: string, uri: string, taskId: string) => {
         try {
-            // Delete from Firebase
+            // Delete from Firestore first
             await attachmentRepo.delete(id);
 
-            // Delete file
-            await FileSystem.deleteAsync(uri, { idempotent: true });
+            // Delete from Firebase Storage if it's a storage URL
+            if (uri.startsWith('http') && uri.includes('firebasestorage')) {
+                // Construct ref from URL or path
+                // We stored it at attachments/taskId/id.jpg
+                const storageRef = firebaseStorage.ref(`attachments/${taskId}/${id}.jpg`);
+                await storageRef.delete().catch(e => console.warn("Failed to delete format storage object", e));
+            }
 
-            // Note: We don't have taskId here to reload easily, 
-            // but the UI usually handles this by filtering the local state or reloading the task view.
-            // For now, we'll just keep it simple as the previous implementation did.
+            // Update local state by optimistic update
+            const current = get().attachments[taskId] || [];
+            set(state => ({
+                attachments: {
+                    ...state.attachments,
+                    [taskId]: current.filter(a => a.id !== id)
+                }
+            }));
+
         } catch (error) {
             console.error("Failed to delete attachment:", error);
             set({ error: "Failed to delete attachment" });

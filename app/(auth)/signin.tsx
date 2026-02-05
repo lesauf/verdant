@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { Dimensions, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from '../../src/presentation/context/AuthContext';
 
 const { width } = Dimensions.get('window');
@@ -59,7 +60,7 @@ export default function SignInScreen() {
 
                 <View className="items-center">
                     <Text className="text-gray-600 text-xs text-center px-4">
-                        By continuing, you agree to Verdant's
+                        By continuing, you agree to Verdant&apos;s
                         <Text className="text-gray-500 font-medium"> Terms of Service </Text>
                         and
                         <Text className="text-gray-500 font-medium"> Privacy Policy</Text>.
