@@ -26,7 +26,7 @@ export default function TaskItem({
     showBlockSelector = true
 }: TaskItemProps) {
     const { blocks } = useBlockStore();
-    const { members } = useFarm();
+    const { members, can } = useFarm();
     const [showDescription, setShowDescription] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
@@ -68,9 +68,10 @@ export default function TaskItem({
                     <TouchableOpacity
                         onPress={() => toggleTaskComplete(task.id)}
                         className="mr-4"
+                        disabled={!can('tasks:edit')}
                     >
                         <View className={`w-6 h-6 rounded-full items-center justify-center ${task.status === 'Done' ? 'bg-emerald-500' : 'border-2 border-gray-300'
-                            }`}>
+                            } ${!can('tasks:edit') ? 'opacity-50' : ''}`}>
                             {task.status === 'Done' && (
                                 <FontAwesomeIcon icon={faCheck} size={12} color="white" />
                             )}
@@ -117,18 +118,22 @@ export default function TaskItem({
 
                     {showActions && (
                         <View className="flex-row gap-2">
-                            <TouchableOpacity
-                                onPress={handleEdit}
-                                className="p-2"
-                            >
-                                <FontAwesomeIcon icon={faEdit} size={16} color="#6b7280" />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={handleDelete}
-                                className="p-2"
-                            >
-                                <FontAwesomeIcon icon={faTrash} size={16} color="#ef4444" />
-                            </TouchableOpacity>
+                            {can('tasks:edit') && (
+                                <TouchableOpacity
+                                    onPress={handleEdit}
+                                    className="p-2"
+                                >
+                                    <FontAwesomeIcon icon={faEdit} size={16} color="#6b7280" />
+                                </TouchableOpacity>
+                            )}
+                            {can('tasks:delete') && (
+                                <TouchableOpacity
+                                    onPress={handleDelete}
+                                    className="p-2"
+                                >
+                                    <FontAwesomeIcon icon={faTrash} size={16} color="#ef4444" />
+                                </TouchableOpacity>
+                            )}
                         </View>
                     )}
                 </View>

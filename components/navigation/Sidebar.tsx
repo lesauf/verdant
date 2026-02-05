@@ -177,10 +177,6 @@ export function Sidebar(props: DrawerContentComponentProps) {
 
                 {!isAssetsCollapsed && (
                     <View style={styles.sectionContent}>
-                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/team?view=assignments')}>
-                            <IconSymbol name="person.2" size={20} color={secondaryTextColor} />
-                            <Text style={[styles.navItemText, { color: textColor }]}>Personnel</Text>
-                        </TouchableOpacity>
                         <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/machinery')}>
                             <IconSymbol name="wrench.and.screwdriver" size={20} color={secondaryTextColor} />
                             <Text style={[styles.navItemText, { color: textColor }]}>Machinery</Text>
@@ -214,13 +210,17 @@ export function Sidebar(props: DrawerContentComponentProps) {
 
                 {!isAdminCollapsed && (
                     <View style={styles.sectionContent}>
+                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/team')}>
+                            <IconSymbol name="person.2.fill" size={20} color={secondaryTextColor} />
+                            <Text style={[styles.navItemText, { color: textColor }]}>Members</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/admin/roles')}>
+                            <IconSymbol name="shield.fill" size={20} color={secondaryTextColor} />
+                            <Text style={[styles.navItemText, { color: textColor }]}>Role Management</Text>
+                        </TouchableOpacity>
                         <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/notes')}>
                             <IconSymbol name="note.text" size={20} color={secondaryTextColor} />
                             <Text style={[styles.navItemText, { color: textColor }]}>Notes</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/team?view=access')}>
-                            <IconSymbol name="person.fill" size={20} color={secondaryTextColor} />
-                            <Text style={[styles.navItemText, { color: textColor }]}>Members</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.navItem} onPress={() => navigateTo('/settings')}>
                             <IconSymbol name="gear" size={20} color={secondaryTextColor} />

@@ -18,7 +18,7 @@ import { useTaskStore } from "../../../src/presentation/stores/taskStore";
 export default function TasksScreen() {
     const { tasks, loadTasks, createTask, updateTask, deleteTask, toggleTaskComplete } = useTaskStore();
     const { blocks, loadBlocks } = useBlockStore();
-    const { currentFarm } = useFarm();
+    const { currentFarm, can } = useFarm();
 
     // View State
     const [viewMode, setViewMode] = useState<'list' | 'calendar' | 'gantt'>('list');
@@ -190,12 +190,14 @@ export default function TasksScreen() {
                 />
             )}
 
-            <TouchableOpacity
-                className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
-                onPress={() => setModalVisible(true)}
-            >
-                <FontAwesomeIcon icon={faPlus} size={24} color="white" />
-            </TouchableOpacity>
+            {can('tasks:create') && (
+                <TouchableOpacity
+                    className="absolute bottom-6 right-6 bg-emerald-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
+                    onPress={() => setModalVisible(true)}
+                >
+                    <FontAwesomeIcon icon={faPlus} size={24} color="white" />
+                </TouchableOpacity>
+            )}
 
             {/* Add Task Modal */}
             <AddTaskModal

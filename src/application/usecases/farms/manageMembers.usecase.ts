@@ -23,6 +23,7 @@ export class ManageMembersUseCase {
         role: input.role,
         permissions: input.permissions || [],
         joinedAt: new Date(),
+        status: 'active',
       };
       
       await this.farmRepository.addMember(input.farmId, member);

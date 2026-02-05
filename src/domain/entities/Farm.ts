@@ -1,9 +1,10 @@
-export type FarmRole = 'owner' | 'manager' | 'worker';
+export type FarmRole = 'owner' | 'manager' | 'worker' | string;
 
 export interface FarmMember {
   userId: string; // Real UID or Shadow ID
   role: FarmRole;
   permissions: string[];
+  customPermissions?: string[]; // Optional permission overrides for role template
   joinedAt: Date;
   // Shadow Member fields
   inviteEmail?: string;

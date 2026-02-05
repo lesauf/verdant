@@ -1,10 +1,11 @@
 import { faArrowLeft, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FarmRole } from '../../src/domain/entities/Farm';
+import { GetRoleTemplatesUseCase } from '../../src/application/usecases/permissions/getRoleTemplates.usecase';
+import { RoleTemplate } from '../../src/domain/entities/RoleTemplate';
 import { getContainer } from '../../src/infrastructure/di/container';
 import { useAuth } from '../../src/presentation/context/AuthContext';
 import { useFarm } from '../../src/presentation/context/FarmContext';
@@ -15,12 +16,48 @@ export default function InviteMemberScreen() {
     const { user } = useAuth();
 
     const [email, setEmail] = useState('');
-    const [role, setRole] = useState<FarmRole>('worker');
-    const [description, setDescription] = useState('');
+    const [templates, setTemplates] = useState<RoleTemplate[]>([]);
+    const [selectedRoleTemplateId, setSelectedRoleTemplateId] = useState<string>('');
     const [loading, setLoading] = useState(false);
+    const [fetchingTemplates, setFetchingTemplates] = useState(true);
+
+    useEffect(() => {
+        loadTemplates();
+    }, [currentFarm]);
+
+    const loadTemplates = async () => {
+        if (!currentFarm) return;
+        try {
+            setFetchingTemplates(true);
+            const container = getContainer();
+            const getRoleTemplatesUseCase = container.resolve<GetRoleTemplatesUseCase>('getRoleTemplatesUseCase');
+            const roleTemplates = await getRoleTemplatesUseCase.execute(currentFarm.id);
+            setTemplates(roleTemplates);
+
+            // Default to worker if available
+            const worker = roleTemplates.find(t => t.name.toLowerCase() === 'worker');
+            if (worker) {
+                setSelectedRoleTemplateId(worker.id);
+            } else if (roleTemplates.length > 0) {
+                setSelectedRoleTemplateId(roleTemplates[0].id);
+            }
+        } catch (error) {
+            console.error('Failed to load role templates:', error);
+        } finally {
+            setFetchingTemplates(false);
+        }
+    };
 
     const handleInvite = async () => {
-        // ... (validation)
+        if (!email.trim()) {
+            Alert.alert('Error', 'Please enter an email address.');
+            return;
+        }
+
+        if (!selectedRoleTemplateId) {
+            Alert.alert('Error', 'Please select a role.');
+            return;
+        }
 
         if (!currentFarm || !user) {
             Alert.alert('Error', 'Session error. Please try again.');
@@ -35,7 +72,7 @@ export default function InviteMemberScreen() {
             await inviteMemberUseCase.execute({
                 farmId: currentFarm.id,
                 email: email.trim(),
-                role: role,
+                role: selectedRoleTemplateId as any, // Cast for now as we transition
                 invitedByUserId: user.uid
             });
 
@@ -62,7 +99,7 @@ export default function InviteMemberScreen() {
                 <Text className="text-xl font-bold text-gray-900 ml-2">Invite Member</Text>
             </View>
 
-            <View className="p-6">
+            <ScrollView className="p-6">
                 <View className="mb-6">
                     <Text className="text-gray-700 font-semibold mb-2">Email Address</Text>
                     <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
@@ -83,29 +120,38 @@ export default function InviteMemberScreen() {
 
                 <View className="mb-8">
                     <Text className="text-gray-700 font-semibold mb-2">Role</Text>
-                    <View className="flex-row gap-3">
-                        {(['worker', 'manager', 'owner'] as FarmRole[]).map((r) => (
-                            <TouchableOpacity
-                                key={r}
-                                onPress={() => setRole(r)}
-                                className={`flex-1 items-center justify-center py-3 rounded-xl border ${role === r
-                                    ? 'bg-emerald-50 border-emerald-500'
-                                    : 'bg-gray-50 border-gray-200'
-                                    }`}
-                            >
-                                <Text className={`capitalize font-medium ${role === r ? 'text-emerald-700' : 'text-gray-600'
-                                    }`}>
-                                    {r}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                    {fetchingTemplates ? (
+                        <ActivityIndicator color="#059669" />
+                    ) : (
+                        <View className="flex-row flex-wrap gap-3">
+                            {templates.map((template) => (
+                                <TouchableOpacity
+                                    key={template.id}
+                                    onPress={() => setSelectedRoleTemplateId(template.id)}
+                                    className={`items-center justify-center px-4 py-3 rounded-xl border ${selectedRoleTemplateId === template.id
+                                        ? 'bg-emerald-50 border-emerald-500'
+                                        : 'bg-gray-50 border-gray-200'
+                                        }`}
+                                    style={{ minWidth: '45%' }}
+                                >
+                                    <View className="items-center">
+                                        <Text className={`font-medium ${selectedRoleTemplateId === template.id ? 'text-emerald-700' : 'text-gray-600'}`}>
+                                            {template.name}
+                                        </Text>
+                                        {template.isSystemRole && (
+                                            <Text className="text-[10px] text-gray-400">System</Text>
+                                        )}
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    )}
                 </View>
 
                 <TouchableOpacity
                     onPress={handleInvite}
-                    disabled={loading}
-                    className={`bg-emerald-600 py-4 rounded-xl items-center justify-center ${loading ? 'opacity-70' : ''}`}
+                    disabled={loading || fetchingTemplates}
+                    className={`bg-emerald-600 py-4 rounded-xl items-center justify-center ${loading || fetchingTemplates ? 'opacity-70' : ''}`}
                 >
                     {loading ? (
                         <ActivityIndicator color="white" />
@@ -113,7 +159,7 @@ export default function InviteMemberScreen() {
                         <Text className="text-white font-bold text-lg">Send Invite</Text>
                     )}
                 </TouchableOpacity>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
