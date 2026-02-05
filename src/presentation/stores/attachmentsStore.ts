@@ -1,3 +1,4 @@
+import { deleteObject, getDownloadURL, putFile, ref } from '@react-native-firebase/storage';
 import * as Crypto from 'expo-crypto';
 import { create } from "zustand";
 import { AttachmentRepository } from "../../data/repositories/firebase/AttachmentRepository";
@@ -55,13 +56,13 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
         const filename = `${id}.jpg`;
 
         try {
-            // Upload to Firebase Storage using RNFirebase API
-            const storageRef = firebaseStorage.ref(`attachments/${taskId}/${filename}`);
+            // Upload to Firebase Storage using modular API
+            const storageRef = ref(firebaseStorage, `attachments/${taskId}/${filename}`);
             
             // Use putFile for native file upload (better performance than Blob)
-            await storageRef.putFile(originalUri);
+            await putFile(storageRef, originalUri);
             
-            const downloadUrl = await storageRef.getDownloadURL();
+            const downloadUrl = await getDownloadURL(storageRef);
 
             // Save to Firestore with download URL
             await attachmentRepo.save({
@@ -88,10 +89,9 @@ export const useAttachmentsStore = create<AttachmentsState>((set, get) => ({
 
             // Delete from Firebase Storage if it's a storage URL
             if (uri.startsWith('http') && uri.includes('firebasestorage')) {
-                // Construct ref from URL or path
                 // We stored it at attachments/taskId/id.jpg
-                const storageRef = firebaseStorage.ref(`attachments/${taskId}/${id}.jpg`);
-                await storageRef.delete().catch(e => console.warn("Failed to delete format storage object", e));
+                const storageRef = ref(firebaseStorage, `attachments/${taskId}/${id}.jpg`);
+                await deleteObject(storageRef).catch(e => console.warn("Failed to delete storage object", e));
             }
 
             // Update local state by optimistic update
