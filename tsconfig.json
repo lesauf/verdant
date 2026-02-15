@@ -1,18 +1,37 @@
 {
-  "extends": "expo/tsconfig.base",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "module": "commonjs",
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noPropertyAccessFromIndexSignature": true
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "nativewind-env.d.ts"
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./libs/shared/domain"
+    },
+    {
+      "path": "./libs/shared/application"
+    },
+    {
+      "path": "./libs/shared/data"
+    },
+    {
+      "path": "./libs/shared/infrastructure"
+    },
+    {
+      "path": "./libs/shared/ui"
+    },
+    {
+      "path": "./libs/shared/util-core"
+    },
+    {
+      "path": "./apps/mobile"
+    }
   ]
 }

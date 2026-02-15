@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "domain": ["libs/shared/domain/src/index.ts"],
+      "domain/*": ["libs/shared/domain/src/lib/*"],
+      "application": ["libs/shared/application/src/index.ts"],
+      "application/*": ["libs/shared/application/src/lib/*"],
+      "data": ["libs/shared/data/src/index.ts"],
+      "data/*": ["libs/shared/data/src/lib/*"],
+      "infrastructure": ["libs/shared/infrastructure/src/index.ts"],
+      "infrastructure/*": ["libs/shared/infrastructure/src/lib/*"],
+      "ui": ["libs/shared/ui/src/index.ts"],
+      "ui/*": ["libs/shared/ui/src/lib/*"],
+      "util-core": ["libs/shared/util-core/src/index.ts"],
+      "util-core/*": ["libs/shared/util-core/src/lib/*"]
+    },
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "exclude": ["node_modules", "tmp"]
+}
